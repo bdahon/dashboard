@@ -213,6 +213,107 @@ DecesChart.propTypes = {
 
 /***/ }),
 
+/***/ "./components/charts/hospitalises-chart.js":
+/*!*************************************************!*\
+  !*** ./components/charts/hospitalises-chart.js ***!
+  \*************************************************/
+/*! exports provided: default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react */ "./node_modules/react/index.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var prop_types__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! prop-types */ "./node_modules/prop-types/index.js");
+/* harmony import */ var prop_types__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(prop_types__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var react_chartjs_2__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! react-chartjs-2 */ "./node_modules/react-chartjs-2/es/index.js");
+/* harmony import */ var _styles_colors__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../styles/colors */ "./styles/colors.js");
+var _jsxFileName = "/Users/jerome/opencovid19-fr/dashboard/components/charts/hospitalises-chart.js";
+var __jsx = react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement;
+
+
+
+
+var options = {
+  tooltips: {
+    mode: 'index'
+  },
+  scales: {
+    xAxes: [{
+      type: 'time',
+      time: {
+        unit: 'day',
+        displayFormats: {
+          day: 'DD/MM'
+        },
+        tooltipFormat: 'DD/MM'
+      },
+      gridLines: {
+        offsetGridLines: true
+      },
+      offset: true
+    }]
+  }
+};
+
+var formatData = function formatData(data) {
+  var datasets = [];
+
+  if (data.some(function (h) {
+    return h.hospitalises;
+  })) {
+    datasets.push({
+      label: 'Hospitalisés',
+      data: data.map(function (h) {
+        return h.hospitalises;
+      }),
+      backgroundColor: _styles_colors__WEBPACK_IMPORTED_MODULE_3__["default"].darkGrey
+    });
+  }
+
+  return {
+    labels: data.map(function (h) {
+      return new Date(h.date);
+    }),
+    datasets: datasets
+  };
+};
+
+var HospitalisesChart = function HospitalisesChart(_ref) {
+  var data = _ref.data,
+      height = _ref.height;
+  return __jsx("div", {
+    style: {
+      padding: '1em'
+    },
+    __source: {
+      fileName: _jsxFileName,
+      lineNumber: 47
+    },
+    __self: this
+  }, __jsx(react_chartjs_2__WEBPACK_IMPORTED_MODULE_2__["Bar"], {
+    data: formatData(data),
+    options: options,
+    height: height,
+    __source: {
+      fileName: _jsxFileName,
+      lineNumber: 48
+    },
+    __self: this
+  }));
+};
+
+HospitalisesChart.defaultProps = {
+  height: null
+};
+HospitalisesChart.propTypes = {
+  data: prop_types__WEBPACK_IMPORTED_MODULE_1___default.a.array.isRequired,
+  height: prop_types__WEBPACK_IMPORTED_MODULE_1___default.a.number
+};
+/* harmony default export */ __webpack_exports__["default"] = (HospitalisesChart);
+
+/***/ }),
+
 /***/ "./components/charts/mixed-chart.js":
 /*!******************************************!*\
   !*** ./components/charts/mixed-chart.js ***!
@@ -236,7 +337,10 @@ var __jsx = react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement;
 
 var options = {
   tooltips: {
-    mode: 'index'
+    mode: 'index',
+    filter: function filter(item) {
+      return item.value !== 'NaN';
+    }
   },
   scales: {
     xAxes: [{
@@ -264,26 +368,54 @@ var formatData = function formatData(data) {
   var datasets = [];
 
   if (data.some(function (h) {
-    return h.casConfirmes;
+    return h.deces;
   })) {
     datasets.push({
-      label: 'En vie',
+      label: 'Décès',
       data: data.map(function (h) {
-        return h.casConfirmes - (h.deces || 0);
+        return h.deces || null;
       }),
-      backgroundColor: _styles_colors__WEBPACK_IMPORTED_MODULE_3__["default"].orange
+      backgroundColor: _styles_colors__WEBPACK_IMPORTED_MODULE_3__["default"].red
     });
   }
 
   if (data.some(function (h) {
-    return h.deces;
+    return h.reanimation;
   })) {
     datasets.push({
-      label: 'Décédés',
+      label: 'En réanimation',
       data: data.map(function (h) {
-        return h.deces;
+        return h.reanimation || null;
       }),
-      backgroundColor: _styles_colors__WEBPACK_IMPORTED_MODULE_3__["default"].red
+      backgroundColor: _styles_colors__WEBPACK_IMPORTED_MODULE_3__["default"].darkerGrey
+    });
+  }
+
+  if (data.some(function (h) {
+    return h.hospitalises;
+  })) {
+    datasets.push({
+      label: 'Autre hospitalisation',
+      data: data.map(function (h) {
+        if (h.hospitalises) {
+          return h.hospitalises - (h.reanimation || 0);
+        }
+
+        return null;
+      }),
+      backgroundColor: _styles_colors__WEBPACK_IMPORTED_MODULE_3__["default"].darkGrey
+    });
+  }
+
+  if (data.some(function (h) {
+    return h.casConfirmes;
+  })) {
+    datasets.push({
+      label: 'Autre',
+      data: data.map(function (h) {
+        return h.casConfirmes - ((h.deces || 0) + (h.hospitalises || h.reanimation || 0));
+      }),
+      backgroundColor: _styles_colors__WEBPACK_IMPORTED_MODULE_3__["default"].orange
     });
   }
 
@@ -304,7 +436,7 @@ var MixedChart = function MixedChart(_ref) {
     },
     __source: {
       fileName: _jsxFileName,
-      lineNumber: 59
+      lineNumber: 86
     },
     __self: this
   }, __jsx(react_chartjs_2__WEBPACK_IMPORTED_MODULE_2__["Bar"], {
@@ -313,7 +445,7 @@ var MixedChart = function MixedChart(_ref) {
     height: height,
     __source: {
       fileName: _jsxFileName,
-      lineNumber: 60
+      lineNumber: 87
     },
     __self: this
   }));
@@ -327,6 +459,107 @@ MixedChart.propTypes = {
   height: prop_types__WEBPACK_IMPORTED_MODULE_1___default.a.number
 };
 /* harmony default export */ __webpack_exports__["default"] = (MixedChart);
+
+/***/ }),
+
+/***/ "./components/charts/reanimation-chart.js":
+/*!************************************************!*\
+  !*** ./components/charts/reanimation-chart.js ***!
+  \************************************************/
+/*! exports provided: default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react */ "./node_modules/react/index.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var prop_types__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! prop-types */ "./node_modules/prop-types/index.js");
+/* harmony import */ var prop_types__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(prop_types__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var react_chartjs_2__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! react-chartjs-2 */ "./node_modules/react-chartjs-2/es/index.js");
+/* harmony import */ var _styles_colors__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../styles/colors */ "./styles/colors.js");
+var _jsxFileName = "/Users/jerome/opencovid19-fr/dashboard/components/charts/reanimation-chart.js";
+var __jsx = react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement;
+
+
+
+
+var options = {
+  tooltips: {
+    mode: 'index'
+  },
+  scales: {
+    xAxes: [{
+      type: 'time',
+      time: {
+        unit: 'day',
+        displayFormats: {
+          day: 'DD/MM'
+        },
+        tooltipFormat: 'DD/MM'
+      },
+      gridLines: {
+        offsetGridLines: true
+      },
+      offset: true
+    }]
+  }
+};
+
+var formatData = function formatData(data) {
+  var datasets = [];
+
+  if (data.some(function (h) {
+    return h.reanimation;
+  })) {
+    datasets.push({
+      label: 'Réanimation',
+      data: data.map(function (h) {
+        return h.reanimation;
+      }),
+      backgroundColor: _styles_colors__WEBPACK_IMPORTED_MODULE_3__["default"].darkerGrey
+    });
+  }
+
+  return {
+    labels: data.map(function (h) {
+      return new Date(h.date);
+    }),
+    datasets: datasets
+  };
+};
+
+var ReanimationChart = function ReanimationChart(_ref) {
+  var data = _ref.data,
+      height = _ref.height;
+  return __jsx("div", {
+    style: {
+      padding: '1em'
+    },
+    __source: {
+      fileName: _jsxFileName,
+      lineNumber: 47
+    },
+    __self: this
+  }, __jsx(react_chartjs_2__WEBPACK_IMPORTED_MODULE_2__["Bar"], {
+    data: formatData(data),
+    options: options,
+    height: height,
+    __source: {
+      fileName: _jsxFileName,
+      lineNumber: 48
+    },
+    __self: this
+  }));
+};
+
+ReanimationChart.defaultProps = {
+  height: null
+};
+ReanimationChart.propTypes = {
+  data: prop_types__WEBPACK_IMPORTED_MODULE_1___default.a.array.isRequired,
+  height: prop_types__WEBPACK_IMPORTED_MODULE_1___default.a.number
+};
+/* harmony default export */ __webpack_exports__["default"] = (ReanimationChart);
 
 /***/ }),
 
@@ -409,6 +642,8 @@ var Counters = function Counters(_ref) {
 
   var _ref2 = report || {},
       casConfirmes = _ref2.casConfirmes,
+      hospitalises = _ref2.hospitalises,
+      reanimation = _ref2.reanimation,
       deces = _ref2.deces;
 
   return __jsx("div", {
@@ -443,10 +678,28 @@ var Counters = function Counters(_ref) {
       lineNumber: 13
     },
     __self: this
+  }), __jsx(_counter__WEBPACK_IMPORTED_MODULE_3__["default"], {
+    value: hospitalises || '?',
+    label: "hospitalisations",
+    color: "darkGrey",
+    __source: {
+      fileName: _jsxFileName,
+      lineNumber: 14
+    },
+    __self: this
+  }), __jsx(_counter__WEBPACK_IMPORTED_MODULE_3__["default"], {
+    value: reanimation || '?',
+    label: "en r\xE9animation",
+    color: "darkerGrey",
+    __source: {
+      fileName: _jsxFileName,
+      lineNumber: 15
+    },
+    __self: this
   })), __jsx(styled_jsx_style__WEBPACK_IMPORTED_MODULE_0___default.a, {
     id: "3378509169",
     __self: this
-  }, ".counters.jsx-3378509169{display:grid;grid-template-columns:1fr 1fr;}\n/*# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbIi9Vc2Vycy9qZXJvbWUvb3BlbmNvdmlkMTktZnIvZGFzaGJvYXJkL2NvbXBvbmVudHMvY291bnRlcnMuanMiXSwibmFtZXMiOltdLCJtYXBwaW5ncyI6IkFBY2tCLEFBR3dCLGFBQ2lCLDhCQUNoQyIsImZpbGUiOiIvVXNlcnMvamVyb21lL29wZW5jb3ZpZDE5LWZyL2Rhc2hib2FyZC9jb21wb25lbnRzL2NvdW50ZXJzLmpzIiwic291cmNlc0NvbnRlbnQiOlsiaW1wb3J0IFJlYWN0IGZyb20gJ3JlYWN0J1xuaW1wb3J0IFByb3BUeXBlcyBmcm9tICdwcm9wLXR5cGVzJ1xuXG5pbXBvcnQgQ291bnRlciBmcm9tICcuL2NvdW50ZXInXG5cbmNvbnN0IENvdW50ZXJzID0gKHtyZXBvcnR9KSA9PiB7XG4gIGNvbnN0IHtjYXNDb25maXJtZXMsIGRlY2VzfSA9IHJlcG9ydCB8fCB7fVxuXG4gIHJldHVybiAoXG4gICAgPGRpdiBjbGFzc05hbWU9J3N0YXRzJz5cbiAgICAgIDxkaXYgY2xhc3NOYW1lPSdjb3VudGVycyc+XG4gICAgICAgIDxDb3VudGVyIHZhbHVlPXtjYXNDb25maXJtZXMgfHwgJz8nfSBsYWJlbD0nY2FzIGNvbmZpcm3DqXMnIGNvbG9yPSdvcmFuZ2UnIC8+XG4gICAgICAgIDxDb3VudGVyIHZhbHVlPXtkZWNlcyB8fCAnPyd9IGxhYmVsPSdkw6ljw6hzJyBjb2xvcj0ncmVkJyAvPlxuICAgICAgPC9kaXY+XG4gICAgICA8c3R5bGUganN4PntgXG4gICAgICAgIC5jb3VudGVycyB7XG4gICAgICAgICAgZGlzcGxheTogZ3JpZDtcbiAgICAgICAgICBncmlkLXRlbXBsYXRlLWNvbHVtbnM6IDFmciAxZnI7XG4gICAgICAgIH1cbiAgICAgIGB9PC9zdHlsZT5cbiAgICA8L2Rpdj5cbiAgKVxufVxuXG5Db3VudGVycy5kZWZhdWx0UHJvcHMgPSB7XG4gIHJlcG9ydDoge31cbn1cblxuQ291bnRlcnMucHJvcFR5cGVzID0ge1xuICByZXBvcnQ6IFByb3BUeXBlcy5vYmplY3Rcbn1cblxuZXhwb3J0IGRlZmF1bHQgQ291bnRlcnNcbiJdfQ== */\n/*@ sourceURL=/Users/jerome/opencovid19-fr/dashboard/components/counters.js */"));
+  }, ".counters.jsx-3378509169{display:grid;grid-template-columns:1fr 1fr;}\n/*# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbIi9Vc2Vycy9qZXJvbWUvb3BlbmNvdmlkMTktZnIvZGFzaGJvYXJkL2NvbXBvbmVudHMvY291bnRlcnMuanMiXSwibmFtZXMiOltdLCJtYXBwaW5ncyI6IkFBZ0JrQixBQUd3QixhQUNpQiw4QkFDaEMiLCJmaWxlIjoiL1VzZXJzL2plcm9tZS9vcGVuY292aWQxOS1mci9kYXNoYm9hcmQvY29tcG9uZW50cy9jb3VudGVycy5qcyIsInNvdXJjZXNDb250ZW50IjpbImltcG9ydCBSZWFjdCBmcm9tICdyZWFjdCdcbmltcG9ydCBQcm9wVHlwZXMgZnJvbSAncHJvcC10eXBlcydcblxuaW1wb3J0IENvdW50ZXIgZnJvbSAnLi9jb3VudGVyJ1xuXG5jb25zdCBDb3VudGVycyA9ICh7cmVwb3J0fSkgPT4ge1xuICBjb25zdCB7Y2FzQ29uZmlybWVzLCBob3NwaXRhbGlzZXMsIHJlYW5pbWF0aW9uLCBkZWNlc30gPSByZXBvcnQgfHwge31cblxuICByZXR1cm4gKFxuICAgIDxkaXYgY2xhc3NOYW1lPSdzdGF0cyc+XG4gICAgICA8ZGl2IGNsYXNzTmFtZT0nY291bnRlcnMnPlxuICAgICAgICA8Q291bnRlciB2YWx1ZT17Y2FzQ29uZmlybWVzIHx8ICc/J30gbGFiZWw9J2NhcyBjb25maXJtw6lzJyBjb2xvcj0nb3JhbmdlJyAvPlxuICAgICAgICA8Q291bnRlciB2YWx1ZT17ZGVjZXMgfHwgJz8nfSBsYWJlbD0nZMOpY8OocycgY29sb3I9J3JlZCcgLz5cbiAgICAgICAgPENvdW50ZXIgdmFsdWU9e2hvc3BpdGFsaXNlcyB8fCAnPyd9IGxhYmVsPSdob3NwaXRhbGlzYXRpb25zJyBjb2xvcj0nZGFya0dyZXknIC8+XG4gICAgICAgIDxDb3VudGVyIHZhbHVlPXtyZWFuaW1hdGlvbiB8fCAnPyd9IGxhYmVsPSdlbiByw6lhbmltYXRpb24nIGNvbG9yPSdkYXJrZXJHcmV5JyAvPlxuICAgICAgPC9kaXY+XG4gICAgICA8c3R5bGUganN4PntgXG4gICAgICAgIC5jb3VudGVycyB7XG4gICAgICAgICAgZGlzcGxheTogZ3JpZDtcbiAgICAgICAgICBncmlkLXRlbXBsYXRlLWNvbHVtbnM6IDFmciAxZnI7XG4gICAgICAgIH1cbiAgICAgIGB9PC9zdHlsZT5cbiAgICA8L2Rpdj5cbiAgKVxufVxuXG5Db3VudGVycy5kZWZhdWx0UHJvcHMgPSB7XG4gIHJlcG9ydDoge31cbn1cblxuQ291bnRlcnMucHJvcFR5cGVzID0ge1xuICByZXBvcnQ6IFByb3BUeXBlcy5vYmplY3Rcbn1cblxuZXhwb3J0IGRlZmF1bHQgQ291bnRlcnNcbiJdfQ== */\n/*@ sourceURL=/Users/jerome/opencovid19-fr/dashboard/components/counters.js */"));
 };
 
 Counters.defaultProps = {
@@ -472,13 +725,16 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var styled_jsx_style__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(styled_jsx_style__WEBPACK_IMPORTED_MODULE_0__);
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react */ "./node_modules/react/index.js");
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
-/* harmony import */ var react_feather__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! react-feather */ "./node_modules/react-feather/dist/index.js");
-/* harmony import */ var _pages__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../pages */ "./pages/index.js");
-/* harmony import */ var _styles_theme__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../styles/theme */ "./styles/theme.js");
-/* harmony import */ var _styles_colors__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../styles/colors */ "./styles/colors.js");
+/* harmony import */ var prop_types__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! prop-types */ "./node_modules/prop-types/index.js");
+/* harmony import */ var prop_types__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(prop_types__WEBPACK_IMPORTED_MODULE_2__);
+/* harmony import */ var react_feather__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! react-feather */ "./node_modules/react-feather/dist/index.js");
+/* harmony import */ var _pages__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../pages */ "./pages/index.js");
+/* harmony import */ var _styles_theme__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../styles/theme */ "./styles/theme.js");
+/* harmony import */ var _styles_colors__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ../styles/colors */ "./styles/colors.js");
 var _jsxFileName = "/Users/jerome/opencovid19-fr/dashboard/components/date-nav.js";
 
 var __jsx = react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement;
+
 
 
 
@@ -490,62 +746,71 @@ var formatDate = function formatDate(isoString) {
   return date.toLocaleDateString();
 };
 
-var DateNav = function DateNav() {
-  var _useContext = Object(react__WEBPACK_IMPORTED_MODULE_1__["useContext"])(_pages__WEBPACK_IMPORTED_MODULE_3__["AppContext"]),
+var DateNav = function DateNav(_ref) {
+  var disabled = _ref.disabled;
+
+  var _useContext = Object(react__WEBPACK_IMPORTED_MODULE_1__["useContext"])(_pages__WEBPACK_IMPORTED_MODULE_4__["AppContext"]),
       date = _useContext.date,
       prev = _useContext.prev,
       next = _useContext.next;
 
+  var Theme = Object(react__WEBPACK_IMPORTED_MODULE_1__["useContext"])(_pages__WEBPACK_IMPORTED_MODULE_4__["ThemeContext"]);
   var formatedDate = formatDate(date);
   return __jsx("div", {
-    className: styled_jsx_style__WEBPACK_IMPORTED_MODULE_0___default.a.dynamic([["3697947657", [_styles_colors__WEBPACK_IMPORTED_MODULE_5__["default"].lightGrey, _styles_colors__WEBPACK_IMPORTED_MODULE_5__["default"].darkerGrey, _styles_theme__WEBPACK_IMPORTED_MODULE_4__["default"].mobileDisplay]]]) + " " + 'menu-header',
-    __source: {
-      fileName: _jsxFileName,
-      lineNumber: 20
-    },
-    __self: this
-  }, __jsx("div", {
-    onClick: prev,
-    className: styled_jsx_style__WEBPACK_IMPORTED_MODULE_0___default.a.dynamic([["3697947657", [_styles_colors__WEBPACK_IMPORTED_MODULE_5__["default"].lightGrey, _styles_colors__WEBPACK_IMPORTED_MODULE_5__["default"].darkerGrey, _styles_theme__WEBPACK_IMPORTED_MODULE_4__["default"].mobileDisplay]]]) + " " + "report-nav ".concat(prev ? '' : 'disabled'),
-    __source: {
-      fileName: _jsxFileName,
-      lineNumber: 21
-    },
-    __self: this
-  }, __jsx(react_feather__WEBPACK_IMPORTED_MODULE_2__["ChevronLeft"], {
-    __source: {
-      fileName: _jsxFileName,
-      lineNumber: 21
-    },
-    __self: this
-  })), __jsx("h2", {
-    className: styled_jsx_style__WEBPACK_IMPORTED_MODULE_0___default.a.dynamic([["3697947657", [_styles_colors__WEBPACK_IMPORTED_MODULE_5__["default"].lightGrey, _styles_colors__WEBPACK_IMPORTED_MODULE_5__["default"].darkerGrey, _styles_theme__WEBPACK_IMPORTED_MODULE_4__["default"].mobileDisplay]]]),
+    className: styled_jsx_style__WEBPACK_IMPORTED_MODULE_0___default.a.dynamic([["1460885580", [_styles_colors__WEBPACK_IMPORTED_MODULE_6__["default"].lightGrey, Theme.primary, _styles_theme__WEBPACK_IMPORTED_MODULE_5__["default"].mobileDisplay, disabled ? '1.7em 1em' : '0.5em 1em']]]) + " " + 'menu-header',
     __source: {
       fileName: _jsxFileName,
       lineNumber: 22
     },
     __self: this
+  }, !disabled && __jsx(react__WEBPACK_IMPORTED_MODULE_1___default.a.Fragment, null, __jsx("div", {
+    onClick: prev,
+    className: styled_jsx_style__WEBPACK_IMPORTED_MODULE_0___default.a.dynamic([["1460885580", [_styles_colors__WEBPACK_IMPORTED_MODULE_6__["default"].lightGrey, Theme.primary, _styles_theme__WEBPACK_IMPORTED_MODULE_5__["default"].mobileDisplay, disabled ? '1.7em 1em' : '0.5em 1em']]]) + " " + "report-nav ".concat(prev ? '' : 'disabled'),
+    __source: {
+      fileName: _jsxFileName,
+      lineNumber: 25
+    },
+    __self: this
+  }, __jsx(react_feather__WEBPACK_IMPORTED_MODULE_3__["ChevronLeft"], {
+    __source: {
+      fileName: _jsxFileName,
+      lineNumber: 25
+    },
+    __self: this
+  })), __jsx("h2", {
+    className: styled_jsx_style__WEBPACK_IMPORTED_MODULE_0___default.a.dynamic([["1460885580", [_styles_colors__WEBPACK_IMPORTED_MODULE_6__["default"].lightGrey, Theme.primary, _styles_theme__WEBPACK_IMPORTED_MODULE_5__["default"].mobileDisplay, disabled ? '1.7em 1em' : '0.5em 1em']]]),
+    __source: {
+      fileName: _jsxFileName,
+      lineNumber: 26
+    },
+    __self: this
   }, "Donn\xE9es au ", formatedDate), __jsx("div", {
     onClick: next,
-    className: styled_jsx_style__WEBPACK_IMPORTED_MODULE_0___default.a.dynamic([["3697947657", [_styles_colors__WEBPACK_IMPORTED_MODULE_5__["default"].lightGrey, _styles_colors__WEBPACK_IMPORTED_MODULE_5__["default"].darkerGrey, _styles_theme__WEBPACK_IMPORTED_MODULE_4__["default"].mobileDisplay]]]) + " " + "report-nav ".concat(next ? '' : 'disabled'),
+    className: styled_jsx_style__WEBPACK_IMPORTED_MODULE_0___default.a.dynamic([["1460885580", [_styles_colors__WEBPACK_IMPORTED_MODULE_6__["default"].lightGrey, Theme.primary, _styles_theme__WEBPACK_IMPORTED_MODULE_5__["default"].mobileDisplay, disabled ? '1.7em 1em' : '0.5em 1em']]]) + " " + "report-nav ".concat(next ? '' : 'disabled'),
     __source: {
       fileName: _jsxFileName,
-      lineNumber: 23
+      lineNumber: 27
     },
     __self: this
-  }, __jsx(react_feather__WEBPACK_IMPORTED_MODULE_2__["ChevronRight"], {
+  }, __jsx(react_feather__WEBPACK_IMPORTED_MODULE_3__["ChevronRight"], {
     __source: {
       fileName: _jsxFileName,
-      lineNumber: 23
+      lineNumber: 27
     },
     __self: this
-  })), __jsx(styled_jsx_style__WEBPACK_IMPORTED_MODULE_0___default.a, {
-    id: "3697947657",
-    dynamic: [_styles_colors__WEBPACK_IMPORTED_MODULE_5__["default"].lightGrey, _styles_colors__WEBPACK_IMPORTED_MODULE_5__["default"].darkerGrey, _styles_theme__WEBPACK_IMPORTED_MODULE_4__["default"].mobileDisplay],
+  }))), __jsx(styled_jsx_style__WEBPACK_IMPORTED_MODULE_0___default.a, {
+    id: "1460885580",
+    dynamic: [_styles_colors__WEBPACK_IMPORTED_MODULE_6__["default"].lightGrey, Theme.primary, _styles_theme__WEBPACK_IMPORTED_MODULE_5__["default"].mobileDisplay, disabled ? '1.7em 1em' : '0.5em 1em'],
     __self: this
-  }, ".menu-header.__jsx-style-dynamic-selector{z-index:2;display:-webkit-box;display:-webkit-flex;display:-ms-flexbox;display:flex;-webkit-flex-flow:nowrap;-ms-flex-flow:nowrap;flex-flow:nowrap;-webkit-box-pack:justify;-webkit-justify-content:space-between;-ms-flex-pack:justify;justify-content:space-between;-webkit-align-items:center;-webkit-box-align:center;-ms-flex-align:center;align-items:center;text-align:center;box-shadow:0 1px 4px ".concat(_styles_colors__WEBPACK_IMPORTED_MODULE_5__["default"].lightGrey, ";padding:1em;background-color:").concat(_styles_colors__WEBPACK_IMPORTED_MODULE_5__["default"].darkerGrey, ";color:#fff;}.report-nav.disabled.__jsx-style-dynamic-selector{color:#ffffff55;}.report-nav.disabled.__jsx-style-dynamic-selector:hover{cursor:initial;}.report-nav.__jsx-style-dynamic-selector:hover{cursor:pointer;}@media (max-width:").concat(_styles_theme__WEBPACK_IMPORTED_MODULE_4__["default"].mobileDisplay, "){.menu-header.__jsx-style-dynamic-selector{font-size:small;padding:0.5em 1em;}.menu-header.__jsx-style-dynamic-selector h2.__jsx-style-dynamic-selector{margin:0.2em;}}\n/*# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbIi9Vc2Vycy9qZXJvbWUvb3BlbmNvdmlkMTktZnIvZGFzaGJvYXJkL2NvbXBvbmVudHMvZGF0ZS1uYXYuanMiXSwibmFtZXMiOltdLCJtYXBwaW5ncyI6IkFBd0JrQixBQUdxQixBQWFNLEFBSUQsQUFJQSxBQUtHLEFBS0gsVUE5QkYsR0ErQmIsRUFkRixBQUlBLENBUkEsQUFhc0Isa0JBQ3BCLGtEQTFCaUIsK0RBQ2EsbUhBQ1gsNkZBQ0Qsa0JBQ2dDLGtEQUN0QyxZQUNrQyw4Q0FDbkMsV0FDYiIsImZpbGUiOiIvVXNlcnMvamVyb21lL29wZW5jb3ZpZDE5LWZyL2Rhc2hib2FyZC9jb21wb25lbnRzL2RhdGUtbmF2LmpzIiwic291cmNlc0NvbnRlbnQiOlsiaW1wb3J0IFJlYWN0LCB7dXNlQ29udGV4dH0gZnJvbSAncmVhY3QnXG5pbXBvcnQge0NoZXZyb25MZWZ0LCBDaGV2cm9uUmlnaHR9IGZyb20gJ3JlYWN0LWZlYXRoZXInXG5cbmltcG9ydCB7QXBwQ29udGV4dH0gZnJvbSAnLi4vcGFnZXMnXG5cbmltcG9ydCB0aGVtZSBmcm9tICcuLi9zdHlsZXMvdGhlbWUnXG5pbXBvcnQgY29sb3JzIGZyb20gJy4uL3N0eWxlcy9jb2xvcnMnXG5cbmNvbnN0IGZvcm1hdERhdGUgPSBpc29TdHJpbmcgPT4ge1xuICBjb25zdCBkYXRlID0gbmV3IERhdGUoaXNvU3RyaW5nKVxuXG4gIHJldHVybiBkYXRlLnRvTG9jYWxlRGF0ZVN0cmluZygpXG59XG5cbmNvbnN0IERhdGVOYXYgPSAoKSA9PiB7XG4gIGNvbnN0IHtkYXRlLCBwcmV2LCBuZXh0fSA9IHVzZUNvbnRleHQoQXBwQ29udGV4dClcbiAgY29uc3QgZm9ybWF0ZWREYXRlID0gZm9ybWF0RGF0ZShkYXRlKVxuXG4gIHJldHVybiAoXG4gICAgPGRpdiBjbGFzc05hbWU9J21lbnUtaGVhZGVyJz5cbiAgICAgIDxkaXYgY2xhc3NOYW1lPXtgcmVwb3J0LW5hdiAke3ByZXYgPyAnJyA6ICdkaXNhYmxlZCd9YH0gb25DbGljaz17cHJldn0+PENoZXZyb25MZWZ0IC8+PC9kaXY+XG4gICAgICA8aDI+RG9ubsOpZXMgYXUge2Zvcm1hdGVkRGF0ZX08L2gyPlxuICAgICAgPGRpdiBjbGFzc05hbWU9e2ByZXBvcnQtbmF2ICR7bmV4dCA/ICcnIDogJ2Rpc2FibGVkJ31gfSBvbkNsaWNrPXtuZXh0fT48Q2hldnJvblJpZ2h0IC8+PC9kaXY+XG5cbiAgICAgIDxzdHlsZSBqc3g+e2BcbiAgICAgICAgLm1lbnUtaGVhZGVyIHtcbiAgICAgICAgICB6LWluZGV4OiAyO1xuICAgICAgICAgIGRpc3BsYXk6IGZsZXg7XG4gICAgICAgICAgZmxleC1mbG93OiBub3dyYXA7XG4gICAgICAgICAganVzdGlmeS1jb250ZW50OiBzcGFjZS1iZXR3ZWVuO1xuICAgICAgICAgIGFsaWduLWl0ZW1zOiBjZW50ZXI7XG4gICAgICAgICAgdGV4dC1hbGlnbjogY2VudGVyO1xuICAgICAgICAgIGJveC1zaGFkb3c6IDAgMXB4IDRweCAke2NvbG9ycy5saWdodEdyZXl9O1xuICAgICAgICAgIHBhZGRpbmc6IDFlbTtcbiAgICAgICAgICBiYWNrZ3JvdW5kLWNvbG9yOiAke2NvbG9ycy5kYXJrZXJHcmV5fTtcbiAgICAgICAgICBjb2xvcjogI2ZmZjtcbiAgICAgICAgfVxuXG4gICAgICAgIC5yZXBvcnQtbmF2LmRpc2FibGVkIHtcbiAgICAgICAgICBjb2xvcjogI2ZmZmZmZjU1O1xuICAgICAgICB9XG5cbiAgICAgICAgLnJlcG9ydC1uYXYuZGlzYWJsZWQ6aG92ZXIge1xuICAgICAgICAgIGN1cnNvcjogaW5pdGlhbDtcbiAgICAgICAgfVxuXG4gICAgICAgIC5yZXBvcnQtbmF2OmhvdmVyIHtcbiAgICAgICAgICBjdXJzb3I6IHBvaW50ZXI7XG4gICAgICAgIH1cblxuICAgICAgICBAbWVkaWEgKG1heC13aWR0aDogJHt0aGVtZS5tb2JpbGVEaXNwbGF5fSkge1xuICAgICAgICAgIC5tZW51LWhlYWRlciB7XG4gICAgICAgICAgICBmb250LXNpemU6IHNtYWxsO1xuICAgICAgICAgICAgcGFkZGluZzogMC41ZW0gMWVtO1xuICAgICAgICAgIH1cblxuICAgICAgICAgIC5tZW51LWhlYWRlciBoMiB7XG4gICAgICAgICAgICBtYXJnaW46IDAuMmVtO1xuICAgICAgICAgIH1cbiAgICAgICAgfVxuICAgICAgYH08L3N0eWxlPlxuICAgIDwvZGl2PlxuICApXG59XG5cbmV4cG9ydCBkZWZhdWx0IERhdGVOYXZcbiJdfQ== */\n/*@ sourceURL=/Users/jerome/opencovid19-fr/dashboard/components/date-nav.js */")));
+  }, ".menu-header.__jsx-style-dynamic-selector{z-index:2;display:-webkit-box;display:-webkit-flex;display:-ms-flexbox;display:flex;-webkit-flex-flow:nowrap;-ms-flex-flow:nowrap;flex-flow:nowrap;-webkit-box-pack:justify;-webkit-justify-content:space-between;-ms-flex-pack:justify;justify-content:space-between;-webkit-align-items:center;-webkit-box-align:center;-ms-flex-align:center;align-items:center;text-align:center;box-shadow:0 1px 4px ".concat(_styles_colors__WEBPACK_IMPORTED_MODULE_6__["default"].lightGrey, ";padding:0 1em;background-color:").concat(Theme.primary, ";color:#fff;}.report-nav.disabled.__jsx-style-dynamic-selector{color:#ffffff55;}.report-nav.disabled.__jsx-style-dynamic-selector:hover{cursor:initial;}.report-nav.__jsx-style-dynamic-selector:hover{cursor:pointer;}@media (max-width:").concat(_styles_theme__WEBPACK_IMPORTED_MODULE_5__["default"].mobileDisplay, "){.menu-header.__jsx-style-dynamic-selector{font-size:small;padding:").concat(disabled ? '1.7em 1em' : '0.5em 1em', ";}.menu-header.__jsx-style-dynamic-selector h2.__jsx-style-dynamic-selector{margin:0.2em;}}\n/*# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbIi9Vc2Vycy9qZXJvbWUvb3BlbmNvdmlkMTktZnIvZGFzaGJvYXJkL2NvbXBvbmVudHMvZGF0ZS1uYXYuanMiXSwibmFtZXMiOltdLCJtYXBwaW5ncyI6IkFBOEJrQixBQUdxQixBQWFNLEFBSUQsQUFJQSxBQUtHLEFBS0gsVUE5QkYsR0ErQmIsRUFkRixBQUlBLENBUkEsQUFheUMscUNBQ3ZDLCtCQTFCaUIsK0RBQ2EsbUhBQ1gsNkZBQ0Qsa0JBQ2dDLGtEQUNwQyxjQUNnQyw4Q0FDbkMsV0FDYiIsImZpbGUiOiIvVXNlcnMvamVyb21lL29wZW5jb3ZpZDE5LWZyL2Rhc2hib2FyZC9jb21wb25lbnRzL2RhdGUtbmF2LmpzIiwic291cmNlc0NvbnRlbnQiOlsiaW1wb3J0IFJlYWN0LCB7dXNlQ29udGV4dH0gZnJvbSAncmVhY3QnXG5pbXBvcnQgUHJvcFR5cGVzIGZyb20gJ3Byb3AtdHlwZXMnXG5pbXBvcnQge0NoZXZyb25MZWZ0LCBDaGV2cm9uUmlnaHR9IGZyb20gJ3JlYWN0LWZlYXRoZXInXG5cbmltcG9ydCB7QXBwQ29udGV4dCwgVGhlbWVDb250ZXh0fSBmcm9tICcuLi9wYWdlcydcblxuaW1wb3J0IHRoZW1lIGZyb20gJy4uL3N0eWxlcy90aGVtZSdcbmltcG9ydCBjb2xvcnMgZnJvbSAnLi4vc3R5bGVzL2NvbG9ycydcblxuY29uc3QgZm9ybWF0RGF0ZSA9IGlzb1N0cmluZyA9PiB7XG4gIGNvbnN0IGRhdGUgPSBuZXcgRGF0ZShpc29TdHJpbmcpXG5cbiAgcmV0dXJuIGRhdGUudG9Mb2NhbGVEYXRlU3RyaW5nKClcbn1cblxuY29uc3QgRGF0ZU5hdiA9ICh7ZGlzYWJsZWR9KSA9PiB7XG4gIGNvbnN0IHtkYXRlLCBwcmV2LCBuZXh0fSA9IHVzZUNvbnRleHQoQXBwQ29udGV4dClcbiAgY29uc3QgVGhlbWUgPSB1c2VDb250ZXh0KFRoZW1lQ29udGV4dClcbiAgY29uc3QgZm9ybWF0ZWREYXRlID0gZm9ybWF0RGF0ZShkYXRlKVxuXG4gIHJldHVybiAoXG4gICAgPGRpdiBjbGFzc05hbWU9J21lbnUtaGVhZGVyJz5cbiAgICAgIHshZGlzYWJsZWQgJiYgKFxuICAgICAgICA8PlxuICAgICAgICAgIDxkaXYgY2xhc3NOYW1lPXtgcmVwb3J0LW5hdiAke3ByZXYgPyAnJyA6ICdkaXNhYmxlZCd9YH0gb25DbGljaz17cHJldn0+PENoZXZyb25MZWZ0IC8+PC9kaXY+XG4gICAgICAgICAgPGgyPkRvbm7DqWVzIGF1IHtmb3JtYXRlZERhdGV9PC9oMj5cbiAgICAgICAgICA8ZGl2IGNsYXNzTmFtZT17YHJlcG9ydC1uYXYgJHtuZXh0ID8gJycgOiAnZGlzYWJsZWQnfWB9IG9uQ2xpY2s9e25leHR9PjxDaGV2cm9uUmlnaHQgLz48L2Rpdj5cbiAgICAgICAgPC8+XG4gICAgICApfVxuXG4gICAgICA8c3R5bGUganN4PntgXG4gICAgICAgIC5tZW51LWhlYWRlciB7XG4gICAgICAgICAgei1pbmRleDogMjtcbiAgICAgICAgICBkaXNwbGF5OiBmbGV4O1xuICAgICAgICAgIGZsZXgtZmxvdzogbm93cmFwO1xuICAgICAgICAgIGp1c3RpZnktY29udGVudDogc3BhY2UtYmV0d2VlbjtcbiAgICAgICAgICBhbGlnbi1pdGVtczogY2VudGVyO1xuICAgICAgICAgIHRleHQtYWxpZ246IGNlbnRlcjtcbiAgICAgICAgICBib3gtc2hhZG93OiAwIDFweCA0cHggJHtjb2xvcnMubGlnaHRHcmV5fTtcbiAgICAgICAgICBwYWRkaW5nOiAwIDFlbTtcbiAgICAgICAgICBiYWNrZ3JvdW5kLWNvbG9yOiAke1RoZW1lLnByaW1hcnl9O1xuICAgICAgICAgIGNvbG9yOiAjZmZmO1xuICAgICAgICB9XG5cbiAgICAgICAgLnJlcG9ydC1uYXYuZGlzYWJsZWQge1xuICAgICAgICAgIGNvbG9yOiAjZmZmZmZmNTU7XG4gICAgICAgIH1cblxuICAgICAgICAucmVwb3J0LW5hdi5kaXNhYmxlZDpob3ZlciB7XG4gICAgICAgICAgY3Vyc29yOiBpbml0aWFsO1xuICAgICAgICB9XG5cbiAgICAgICAgLnJlcG9ydC1uYXY6aG92ZXIge1xuICAgICAgICAgIGN1cnNvcjogcG9pbnRlcjtcbiAgICAgICAgfVxuXG4gICAgICAgIEBtZWRpYSAobWF4LXdpZHRoOiAke3RoZW1lLm1vYmlsZURpc3BsYXl9KSB7XG4gICAgICAgICAgLm1lbnUtaGVhZGVyIHtcbiAgICAgICAgICAgIGZvbnQtc2l6ZTogc21hbGw7XG4gICAgICAgICAgICBwYWRkaW5nOiAke2Rpc2FibGVkID8gJzEuN2VtIDFlbScgOiAnMC41ZW0gMWVtJ307XG4gICAgICAgICAgfVxuXG4gICAgICAgICAgLm1lbnUtaGVhZGVyIGgyIHtcbiAgICAgICAgICAgIG1hcmdpbjogMC4yZW07XG4gICAgICAgICAgfVxuICAgICAgICB9XG4gICAgICBgfTwvc3R5bGU+XG4gICAgPC9kaXY+XG4gIClcbn1cblxuRGF0ZU5hdi5kZWZhdWx0UHJvcHMgPSB7XG4gIGRpc2FibGVkOiBmYWxzZVxufVxuXG5EYXRlTmF2LnByb3BUeXBlcyA9IHtcbiAgZGlzYWJsZWQ6IFByb3BUeXBlcy5ib29sXG59XG5cbmV4cG9ydCBkZWZhdWx0IERhdGVOYXZcbiJdfQ== */\n/*@ sourceURL=/Users/jerome/opencovid19-fr/dashboard/components/date-nav.js */")));
 };
 
+DateNav.defaultProps = {
+  disabled: false
+};
+DateNav.propTypes = {
+  disabled: prop_types__WEBPACK_IMPORTED_MODULE_2___default.a.bool
+};
 /* harmony default export */ __webpack_exports__["default"] = (DateNav);
 
 /***/ }),
@@ -565,7 +830,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
 /* harmony import */ var react_feather__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! react-feather */ "./node_modules/react-feather/dist/index.js");
 /* harmony import */ var _styles_theme__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../styles/theme */ "./styles/theme.js");
-/* harmony import */ var _styles_colors__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../styles/colors */ "./styles/colors.js");
+/* harmony import */ var _pages__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../pages */ "./pages/index.js");
 var _jsxFileName = "/Users/jerome/opencovid19-fr/dashboard/components/footer.js";
 
 var __jsx = react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement;
@@ -575,26 +840,27 @@ var __jsx = react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement;
 
 
 var Footer = function Footer() {
+  var Theme = Object(react__WEBPACK_IMPORTED_MODULE_1__["useContext"])(_pages__WEBPACK_IMPORTED_MODULE_4__["ThemeContext"]);
   return __jsx("div", {
-    className: styled_jsx_style__WEBPACK_IMPORTED_MODULE_0___default.a.dynamic([["476178503", [_styles_colors__WEBPACK_IMPORTED_MODULE_4__["default"].darkerGrey, _styles_theme__WEBPACK_IMPORTED_MODULE_3__["default"].mobileDisplay]]]) + " " + 'menu-footer',
+    className: styled_jsx_style__WEBPACK_IMPORTED_MODULE_0___default.a.dynamic([["2111220692", [Theme.primary, _styles_theme__WEBPACK_IMPORTED_MODULE_3__["default"].mobileDisplay]]]) + " " + 'menu-footer',
     __source: {
       fileName: _jsxFileName,
-      lineNumber: 8
+      lineNumber: 11
     },
     __self: this
   }, __jsx("div", {
-    className: styled_jsx_style__WEBPACK_IMPORTED_MODULE_0___default.a.dynamic([["476178503", [_styles_colors__WEBPACK_IMPORTED_MODULE_4__["default"].darkerGrey, _styles_theme__WEBPACK_IMPORTED_MODULE_3__["default"].mobileDisplay]]]),
+    className: styled_jsx_style__WEBPACK_IMPORTED_MODULE_0___default.a.dynamic([["2111220692", [Theme.primary, _styles_theme__WEBPACK_IMPORTED_MODULE_3__["default"].mobileDisplay]]]),
     __source: {
       fileName: _jsxFileName,
-      lineNumber: 9
+      lineNumber: 12
     },
     __self: this
   }, __jsx("a", {
     href: "https://github.com/opencovid19-fr/dashboard",
-    className: styled_jsx_style__WEBPACK_IMPORTED_MODULE_0___default.a.dynamic([["476178503", [_styles_colors__WEBPACK_IMPORTED_MODULE_4__["default"].darkerGrey, _styles_theme__WEBPACK_IMPORTED_MODULE_3__["default"].mobileDisplay]]]),
+    className: styled_jsx_style__WEBPACK_IMPORTED_MODULE_0___default.a.dynamic([["2111220692", [Theme.primary, _styles_theme__WEBPACK_IMPORTED_MODULE_3__["default"].mobileDisplay]]]),
     __source: {
       fileName: _jsxFileName,
-      lineNumber: 10
+      lineNumber: 13
     },
     __self: this
   }, __jsx(react_feather__WEBPACK_IMPORTED_MODULE_2__["GitHub"], {
@@ -603,14 +869,14 @@ var Footer = function Footer() {
     },
     __source: {
       fileName: _jsxFileName,
-      lineNumber: 11
+      lineNumber: 14
     },
     __self: this
   }))), __jsx(styled_jsx_style__WEBPACK_IMPORTED_MODULE_0___default.a, {
-    id: "476178503",
-    dynamic: [_styles_colors__WEBPACK_IMPORTED_MODULE_4__["default"].darkerGrey, _styles_theme__WEBPACK_IMPORTED_MODULE_3__["default"].mobileDisplay],
+    id: "2111220692",
+    dynamic: [Theme.primary, _styles_theme__WEBPACK_IMPORTED_MODULE_3__["default"].mobileDisplay],
     __self: this
-  }, ".menu-footer.__jsx-style-dynamic-selector{display:-webkit-box;display:-webkit-flex;display:-ms-flexbox;display:flex;background:".concat(_styles_colors__WEBPACK_IMPORTED_MODULE_4__["default"].darkerGrey, ";padding:1em;}.menu-footer.__jsx-style-dynamic-selector div.__jsx-style-dynamic-selector{display:-webkit-box;display:-webkit-flex;display:-ms-flexbox;display:flex;-webkit-flex:1;-ms-flex:1;flex:1;}a.__jsx-style-dynamic-selector{color:#fff;width:100%;text-align:center;}@media (max-width:").concat(_styles_theme__WEBPACK_IMPORTED_MODULE_3__["default"].mobileDisplay, "){.menu-footer.__jsx-style-dynamic-selector{padding:0.5em 1em;}}\n/*# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbIi9Vc2Vycy9qZXJvbWUvb3BlbmNvdmlkMTktZnIvZGFzaGJvYXJkL2NvbXBvbmVudHMvZm9vdGVyLmpzIl0sIm5hbWVzIjpbXSwibWFwcGluZ3MiOiJBQWNnQixBQUdzQixBQU1BLEFBS0YsQUFPUyxXQU5ULE9BT1gsSUFOa0Isa0JBQ3BCLGtDQWIwQyxBQU1qQyxpQ0FDVCxPQU5jLFlBQ2QiLCJmaWxlIjoiL1VzZXJzL2plcm9tZS9vcGVuY292aWQxOS1mci9kYXNoYm9hcmQvY29tcG9uZW50cy9mb290ZXIuanMiLCJzb3VyY2VzQ29udGVudCI6WyJpbXBvcnQgUmVhY3QgZnJvbSAncmVhY3QnXG5pbXBvcnQge0dpdEh1Yn0gZnJvbSAncmVhY3QtZmVhdGhlcidcblxuaW1wb3J0IHRoZW1lIGZyb20gJy4uL3N0eWxlcy90aGVtZSdcbmltcG9ydCBjb2xvcnMgZnJvbSAnLi4vc3R5bGVzL2NvbG9ycydcblxuY29uc3QgRm9vdGVyID0gKCkgPT4gKFxuICA8ZGl2IGNsYXNzTmFtZT0nbWVudS1mb290ZXInPlxuICAgIDxkaXY+XG4gICAgICA8YSBocmVmPSdodHRwczovL2dpdGh1Yi5jb20vb3BlbmNvdmlkMTktZnIvZGFzaGJvYXJkJz5cbiAgICAgICAgPEdpdEh1YiBzdHlsZT17e3ZlcnRpY2FsQWFsaWduOiAnbWlkZGxlJ319IC8+XG4gICAgICA8L2E+XG4gICAgPC9kaXY+XG5cbiAgICA8c3R5bGUganN4PntgXG4gICAgICAubWVudS1mb290ZXIge1xuICAgICAgICBkaXNwbGF5OiBmbGV4O1xuICAgICAgICBiYWNrZ3JvdW5kOiAke2NvbG9ycy5kYXJrZXJHcmV5fTtcbiAgICAgICAgcGFkZGluZzogMWVtO1xuICAgICAgfVxuXG4gICAgICAubWVudS1mb290ZXIgZGl2IHtcbiAgICAgICAgZGlzcGxheTogZmxleDtcbiAgICAgICAgZmxleDogMTtcbiAgICAgIH1cblxuICAgICAgYSB7XG4gICAgICAgIGNvbG9yOiAjZmZmO1xuICAgICAgICB3aWR0aDogMTAwJTtcbiAgICAgICAgdGV4dC1hbGlnbjogY2VudGVyO1xuICAgICAgfVxuXG4gICAgICBAbWVkaWEgKG1heC13aWR0aDogJHt0aGVtZS5tb2JpbGVEaXNwbGF5fSkge1xuICAgICAgICAubWVudS1mb290ZXIge1xuICAgICAgICAgIHBhZGRpbmc6IDAuNWVtIDFlbTtcbiAgICAgICAgfVxuICAgICAgfVxuICAgIGB9PC9zdHlsZT5cbiAgPC9kaXY+XG4pXG5cbmV4cG9ydCBkZWZhdWx0IEZvb3RlclxuIl19 */\n/*@ sourceURL=/Users/jerome/opencovid19-fr/dashboard/components/footer.js */")));
+  }, ".menu-footer.__jsx-style-dynamic-selector{display:-webkit-box;display:-webkit-flex;display:-ms-flexbox;display:flex;background:".concat(Theme.primary, ";padding:1em;}.menu-footer.__jsx-style-dynamic-selector div.__jsx-style-dynamic-selector{display:-webkit-box;display:-webkit-flex;display:-ms-flexbox;display:flex;-webkit-flex:1;-ms-flex:1;flex:1;}a.__jsx-style-dynamic-selector{color:#fff;width:100%;text-align:center;}@media (max-width:").concat(_styles_theme__WEBPACK_IMPORTED_MODULE_3__["default"].mobileDisplay, "){.menu-footer.__jsx-style-dynamic-selector{padding:0.5em 1em;}}\n/*# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbIi9Vc2Vycy9qZXJvbWUvb3BlbmNvdmlkMTktZnIvZGFzaGJvYXJkL2NvbXBvbmVudHMvZm9vdGVyLmpzIl0sIm5hbWVzIjpbXSwibWFwcGluZ3MiOiJBQWlCa0IsQUFHd0IsQUFNQSxBQUtGLEFBT1MsV0FOVCxPQU9YLElBTmtCLGtCQUNwQixrQ0FiMEMsQUFNakMsaUNBQ1QsT0FOYyxZQUNkIiwiZmlsZSI6Ii9Vc2Vycy9qZXJvbWUvb3BlbmNvdmlkMTktZnIvZGFzaGJvYXJkL2NvbXBvbmVudHMvZm9vdGVyLmpzIiwic291cmNlc0NvbnRlbnQiOlsiaW1wb3J0IFJlYWN0LCB7dXNlQ29udGV4dH0gZnJvbSAncmVhY3QnXG5pbXBvcnQge0dpdEh1Yn0gZnJvbSAncmVhY3QtZmVhdGhlcidcblxuaW1wb3J0IHRoZW1lIGZyb20gJy4uL3N0eWxlcy90aGVtZSdcbmltcG9ydCB7VGhlbWVDb250ZXh0fSBmcm9tICcuLi9wYWdlcydcblxuY29uc3QgRm9vdGVyID0gKCkgPT4ge1xuICBjb25zdCBUaGVtZSA9IHVzZUNvbnRleHQoVGhlbWVDb250ZXh0KVxuXG4gIHJldHVybiAoXG4gICAgPGRpdiBjbGFzc05hbWU9J21lbnUtZm9vdGVyJz5cbiAgICAgIDxkaXY+XG4gICAgICAgIDxhIGhyZWY9J2h0dHBzOi8vZ2l0aHViLmNvbS9vcGVuY292aWQxOS1mci9kYXNoYm9hcmQnPlxuICAgICAgICAgIDxHaXRIdWIgc3R5bGU9e3t2ZXJ0aWNhbEFhbGlnbjogJ21pZGRsZSd9fSAvPlxuICAgICAgICA8L2E+XG4gICAgICA8L2Rpdj5cblxuICAgICAgPHN0eWxlIGpzeD57YFxuICAgICAgICAubWVudS1mb290ZXIge1xuICAgICAgICAgIGRpc3BsYXk6IGZsZXg7XG4gICAgICAgICAgYmFja2dyb3VuZDogJHtUaGVtZS5wcmltYXJ5fTtcbiAgICAgICAgICBwYWRkaW5nOiAxZW07XG4gICAgICAgIH1cbiAgXG4gICAgICAgIC5tZW51LWZvb3RlciBkaXYge1xuICAgICAgICAgIGRpc3BsYXk6IGZsZXg7XG4gICAgICAgICAgZmxleDogMTtcbiAgICAgICAgfVxuICBcbiAgICAgICAgYSB7XG4gICAgICAgICAgY29sb3I6ICNmZmY7XG4gICAgICAgICAgd2lkdGg6IDEwMCU7XG4gICAgICAgICAgdGV4dC1hbGlnbjogY2VudGVyO1xuICAgICAgICB9XG4gIFxuICAgICAgICBAbWVkaWEgKG1heC13aWR0aDogJHt0aGVtZS5tb2JpbGVEaXNwbGF5fSkge1xuICAgICAgICAgIC5tZW51LWZvb3RlciB7XG4gICAgICAgICAgICBwYWRkaW5nOiAwLjVlbSAxZW07XG4gICAgICAgICAgfVxuICAgICAgICB9XG4gICAgICBgfTwvc3R5bGU+XG4gICAgPC9kaXY+XG4gIClcbn1cblxuZXhwb3J0IGRlZmF1bHQgRm9vdGVyXG4iXX0= */\n/*@ sourceURL=/Users/jerome/opencovid19-fr/dashboard/components/footer.js */")));
 };
 
 /* harmony default export */ __webpack_exports__["default"] = (Footer);
@@ -773,7 +1039,7 @@ var MapSelector = function MapSelector(_ref) {
   }));
 
   return __jsx("div", {
-    className: styled_jsx_style__WEBPACK_IMPORTED_MODULE_2___default.a.dynamic([["3670400078", [_styles_colors__WEBPACK_IMPORTED_MODULE_6__["default"].lightGrey]]]) + " " + 'switch',
+    className: styled_jsx_style__WEBPACK_IMPORTED_MODULE_2___default.a.dynamic([["3884444985", [_styles_colors__WEBPACK_IMPORTED_MODULE_6__["default"].lightGrey]]]) + " " + 'switch',
     __source: {
       fileName: _jsxFileName,
       lineNumber: 24
@@ -783,14 +1049,14 @@ var MapSelector = function MapSelector(_ref) {
     onClick: function onClick() {
       return setIsOpen(!isOpen);
     },
-    className: styled_jsx_style__WEBPACK_IMPORTED_MODULE_2___default.a.dynamic([["3670400078", [_styles_colors__WEBPACK_IMPORTED_MODULE_6__["default"].lightGrey]]]) + " " + 'header',
+    className: styled_jsx_style__WEBPACK_IMPORTED_MODULE_2___default.a.dynamic([["3884444985", [_styles_colors__WEBPACK_IMPORTED_MODULE_6__["default"].lightGrey]]]) + " " + 'header',
     __source: {
       fileName: _jsxFileName,
       lineNumber: 25
     },
     __self: this
   }, __jsx("span", {
-    className: styled_jsx_style__WEBPACK_IMPORTED_MODULE_2___default.a.dynamic([["3670400078", [_styles_colors__WEBPACK_IMPORTED_MODULE_6__["default"].lightGrey]]]),
+    className: styled_jsx_style__WEBPACK_IMPORTED_MODULE_2___default.a.dynamic([["3884444985", [_styles_colors__WEBPACK_IMPORTED_MODULE_6__["default"].lightGrey]]]),
     __source: {
       fileName: _jsxFileName,
       lineNumber: 26
@@ -809,7 +1075,7 @@ var MapSelector = function MapSelector(_ref) {
     },
     __self: this
   })), isOpen && __jsx("div", {
-    className: styled_jsx_style__WEBPACK_IMPORTED_MODULE_2___default.a.dynamic([["3670400078", [_styles_colors__WEBPACK_IMPORTED_MODULE_6__["default"].lightGrey]]]) + " " + 'menu',
+    className: styled_jsx_style__WEBPACK_IMPORTED_MODULE_2___default.a.dynamic([["3884444985", [_styles_colors__WEBPACK_IMPORTED_MODULE_6__["default"].lightGrey]]]) + " " + 'menu',
     __source: {
       fileName: _jsxFileName,
       lineNumber: 29
@@ -818,14 +1084,14 @@ var MapSelector = function MapSelector(_ref) {
   }, categories.map(function (cat) {
     return __jsx("div", {
       key: cat,
-      className: styled_jsx_style__WEBPACK_IMPORTED_MODULE_2___default.a.dynamic([["3670400078", [_styles_colors__WEBPACK_IMPORTED_MODULE_6__["default"].lightGrey]]]) + " " + 'sub-cat',
+      className: styled_jsx_style__WEBPACK_IMPORTED_MODULE_2___default.a.dynamic([["3884444985", [_styles_colors__WEBPACK_IMPORTED_MODULE_6__["default"].lightGrey]]]) + " " + 'sub-cat',
       __source: {
         fileName: _jsxFileName,
         lineNumber: 31
       },
       __self: this
     }, __jsx("div", {
-      className: styled_jsx_style__WEBPACK_IMPORTED_MODULE_2___default.a.dynamic([["3670400078", [_styles_colors__WEBPACK_IMPORTED_MODULE_6__["default"].lightGrey]]]) + " " + 'sub-title',
+      className: styled_jsx_style__WEBPACK_IMPORTED_MODULE_2___default.a.dynamic([["3884444985", [_styles_colors__WEBPACK_IMPORTED_MODULE_6__["default"].lightGrey]]]) + " " + 'sub-title',
       __source: {
         fileName: _jsxFileName,
         lineNumber: 32
@@ -842,14 +1108,14 @@ var MapSelector = function MapSelector(_ref) {
         onClick: function onClick() {
           return handleMap(index);
         },
-        className: styled_jsx_style__WEBPACK_IMPORTED_MODULE_2___default.a.dynamic([["3670400078", [_styles_colors__WEBPACK_IMPORTED_MODULE_6__["default"].lightGrey]]]) + " " + "menu-item ".concat(index === mapIdx ? 'selected' : ''),
+        className: styled_jsx_style__WEBPACK_IMPORTED_MODULE_2___default.a.dynamic([["3884444985", [_styles_colors__WEBPACK_IMPORTED_MODULE_6__["default"].lightGrey]]]) + " " + "menu-item ".concat(index === mapIdx ? 'selected' : ''),
         __source: {
           fileName: _jsxFileName,
           lineNumber: 36
         },
         __self: this
       }, __jsx("span", {
-        className: styled_jsx_style__WEBPACK_IMPORTED_MODULE_2___default.a.dynamic([["3670400078", [_styles_colors__WEBPACK_IMPORTED_MODULE_6__["default"].lightGrey]]]),
+        className: styled_jsx_style__WEBPACK_IMPORTED_MODULE_2___default.a.dynamic([["3884444985", [_styles_colors__WEBPACK_IMPORTED_MODULE_6__["default"].lightGrey]]]),
         __source: {
           fileName: _jsxFileName,
           lineNumber: 41
@@ -864,10 +1130,10 @@ var MapSelector = function MapSelector(_ref) {
       }));
     }));
   })), __jsx(styled_jsx_style__WEBPACK_IMPORTED_MODULE_2___default.a, {
-    id: "3670400078",
+    id: "3884444985",
     dynamic: [_styles_colors__WEBPACK_IMPORTED_MODULE_6__["default"].lightGrey],
     __self: this
-  }, ".switch.__jsx-style-dynamic-selector{display:-webkit-box;display:-webkit-flex;display:-ms-flexbox;display:flex;-webkit-flex-direction:column;-ms-flex-direction:column;flex-direction:column;background-color:#000000aa;color:#fff;border-radius:4px;}.header.__jsx-style-dynamic-selector{display:-webkit-box;display:-webkit-flex;display:-ms-flexbox;display:flex;-webkit-box-pack:justify;-webkit-justify-content:space-between;-ms-flex-pack:justify;justify-content:space-between;-webkit-align-items:center;-webkit-box-align:center;-ms-flex-align:center;align-items:center;padding:0.5em;}.switch.__jsx-style-dynamic-selector:hover{cursor:pointer;}.menu.__jsx-style-dynamic-selector{display:-webkit-box;display:-webkit-flex;display:-ms-flexbox;display:flex;-webkit-flex-direction:column;-ms-flex-direction:column;flex-direction:column;}.menu-item.__jsx-style-dynamic-selector{display:-webkit-box;display:-webkit-flex;display:-ms-flexbox;display:flex;-webkit-align-items:center;-webkit-box-align:center;-ms-flex-align:center;align-items:center;padding:0.2em 0.5em;}.menu-item.__jsx-style-dynamic-selector:hover{background-color:".concat(_styles_colors__WEBPACK_IMPORTED_MODULE_6__["default"].lightGrey, ";color:#000;}.menu-item.selected.__jsx-style-dynamic-selector:hover{background-color:none;cursor:initial;}.sub-cat.__jsx-style-dynamic-selector{padding-bottom:0.2em;}.sub-title.__jsx-style-dynamic-selector{font-size:larger;text-transform:capitalize;padding:0.5em 0.4em;background-color:#00000066;}span.__jsx-style-dynamic-selector{margin-right:0.4em;}\n/*# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbIi9Vc2Vycy9qZXJvbWUvb3BlbmNvdmlkMTktZnIvZGFzaGJvYXJkL2NvbXBvbmVudHMvbWFwLXNlbGVjdG9yLmpzIl0sIm5hbWVzIjpbXSwibWFwcGluZ3MiOiJBQWlEa0IsQUFHd0IsQUFRQSxBQU9FLEFBSUYsQUFLQSxBQU1pQyxBQUt4QixBQUtELEFBSUosQUFPRSxlQW5DckIsRUE2QjRCLEVBTzVCLEVBWEEsQ0FMaUIsZUFDakIsTUFTc0IsR0FmVCxXQUNiLE1BZTZCLFdBOUNMLEFBUVEsQUFXUixBQUtILGdCQXVCckIsOERBOUM2QixBQW1CN0IsZUFLc0IsWUF2QlQsUUF3QmIsRUFqQnFCLENBTkQsa0JBQ3BCLDBFQU1nQixjQUNoQiIsImZpbGUiOiIvVXNlcnMvamVyb21lL29wZW5jb3ZpZDE5LWZyL2Rhc2hib2FyZC9jb21wb25lbnRzL21hcC1zZWxlY3Rvci5qcyIsInNvdXJjZXNDb250ZW50IjpbImltcG9ydCBSZWFjdCwge3VzZVN0YXRlLCB1c2VDYWxsYmFjaywgdXNlQ29udGV4dH0gZnJvbSAncmVhY3QnXG5pbXBvcnQgUHJvcFR5cGVzIGZyb20gJ3Byb3AtdHlwZXMnXG5pbXBvcnQge2luZGV4T2YsIHVuaXF9IGZyb20gJ2xvZGFzaCdcbmltcG9ydCB7Q2hldnJvbkRvd24sIENoZXZyb25VcCwgQ2hlY2t9IGZyb20gJ3JlYWN0LWZlYXRoZXInXG5cbmltcG9ydCBjb2xvcnMgZnJvbSAnLi4vc3R5bGVzL2NvbG9ycydcblxuaW1wb3J0IHtBcHBDb250ZXh0fSBmcm9tICcuLi9wYWdlcydcblxuY29uc3QgTWFwU2VsZWN0b3IgPSAoe21hcElkeCwgc2VsZWN0TWFwfSkgPT4ge1xuICBjb25zdCB7bWFwc30gPSB1c2VDb250ZXh0KEFwcENvbnRleHQpXG4gIGNvbnN0IHNlbGVjdGVkTWFwID0gbWFwc1ttYXBJZHhdXG5cbiAgY29uc3QgW2lzT3Blbiwgc2V0SXNPcGVuXSA9IHVzZVN0YXRlKGZhbHNlKVxuXG4gIGNvbnN0IGhhbmRsZU1hcCA9IHVzZUNhbGxiYWNrKG1hcCA9PiB7XG4gICAgc2VsZWN0TWFwKG1hcClcbiAgICBzZXRJc09wZW4oZmFsc2UpXG4gIH0sIFtzZWxlY3RNYXBdKVxuXG4gIGNvbnN0IGNhdGVnb3JpZXMgPSB1bmlxKG1hcHMubWFwKG1hcCA9PiBtYXAuY2F0ZWdvcnkpKVxuXG4gIHJldHVybiAoXG4gICAgPGRpdiBjbGFzc05hbWU9J3N3aXRjaCc+XG4gICAgICA8ZGl2IGNsYXNzTmFtZT0naGVhZGVyJyBvbkNsaWNrPXsoKSA9PiBzZXRJc09wZW4oIWlzT3Blbil9PlxuICAgICAgICA8c3Bhbj57c2VsZWN0ZWRNYXAubmFtZX0gLSBtYWlsbGUge3NlbGVjdGVkTWFwLmNhdGVnb3J5fTwvc3Bhbj4ge2lzT3BlbiA/IDxDaGV2cm9uRG93biAvPiA6IDxDaGV2cm9uVXAgLz59XG4gICAgICA8L2Rpdj5cbiAgICAgIHtpc09wZW4gJiYgKFxuICAgICAgICA8ZGl2IGNsYXNzTmFtZT0nbWVudSc+XG4gICAgICAgICAge2NhdGVnb3JpZXMubWFwKGNhdCA9PiAoXG4gICAgICAgICAgICA8ZGl2IGtleT17Y2F0fSBjbGFzc05hbWU9J3N1Yi1jYXQnPlxuICAgICAgICAgICAgICA8ZGl2IGNsYXNzTmFtZT0nc3ViLXRpdGxlJz57Y2F0fTwvZGl2PlxuICAgICAgICAgICAgICB7bWFwcy5maWx0ZXIoKHtjYXRlZ29yeX0pID0+IGNhdGVnb3J5ID09PSBjYXQpLm1hcChtYXAgPT4ge1xuICAgICAgICAgICAgICAgIGNvbnN0IGluZGV4ID0gaW5kZXhPZihtYXBzLCBtYXApXG4gICAgICAgICAgICAgICAgcmV0dXJuIChcbiAgICAgICAgICAgICAgICAgIDxkaXZcbiAgICAgICAgICAgICAgICAgICAga2V5PXttYXAubmFtZX1cbiAgICAgICAgICAgICAgICAgICAgY2xhc3NOYW1lPXtgbWVudS1pdGVtICR7aW5kZXggPT09IG1hcElkeCA/ICdzZWxlY3RlZCcgOiAnJ31gfVxuICAgICAgICAgICAgICAgICAgICBvbkNsaWNrPXsoKSA9PiBoYW5kbGVNYXAoaW5kZXgpfVxuICAgICAgICAgICAgICAgICAgPlxuICAgICAgICAgICAgICAgICAgICA8c3Bhbj57bWFwLm5hbWV9PC9zcGFuPiB7aW5kZXggPT09IG1hcElkeCAmJiA8Q2hlY2sgLz59XG4gICAgICAgICAgICAgICAgICA8L2Rpdj5cbiAgICAgICAgICAgICAgICApXG4gICAgICAgICAgICAgIH0pfVxuICAgICAgICAgICAgPC9kaXY+XG4gICAgICAgICAgKSl9XG4gICAgICAgIDwvZGl2PlxuICAgICAgKX1cblxuICAgICAgPHN0eWxlIGpzeD57YFxuICAgICAgICAuc3dpdGNoIHtcbiAgICAgICAgICBkaXNwbGF5OiBmbGV4O1xuICAgICAgICAgIGZsZXgtZGlyZWN0aW9uOiBjb2x1bW47XG4gICAgICAgICAgYmFja2dyb3VuZC1jb2xvcjogIzAwMDAwMGFhO1xuICAgICAgICAgIGNvbG9yOiAjZmZmO1xuICAgICAgICAgIGJvcmRlci1yYWRpdXM6IDRweDtcbiAgICAgICAgfVxuXG4gICAgICAgIC5oZWFkZXIge1xuICAgICAgICAgIGRpc3BsYXk6IGZsZXg7XG4gICAgICAgICAganVzdGlmeS1jb250ZW50OiBzcGFjZS1iZXR3ZWVuO1xuICAgICAgICAgIGFsaWduLWl0ZW1zOiBjZW50ZXI7XG4gICAgICAgICAgcGFkZGluZzogMC41ZW07XG4gICAgICAgIH1cblxuICAgICAgICAuc3dpdGNoOmhvdmVyIHtcbiAgICAgICAgICBjdXJzb3I6IHBvaW50ZXI7XG4gICAgICAgIH1cblxuICAgICAgICAubWVudSB7XG4gICAgICAgICAgZGlzcGxheTogZmxleDtcbiAgICAgICAgICBmbGV4LWRpcmVjdGlvbjogY29sdW1uO1xuICAgICAgICB9XG5cbiAgICAgICAgLm1lbnUtaXRlbSB7XG4gICAgICAgICAgZGlzcGxheTogZmxleDtcbiAgICAgICAgICBhbGlnbi1pdGVtczogY2VudGVyO1xuICAgICAgICAgIHBhZGRpbmc6IDAuMmVtIDAuNWVtO1xuICAgICAgICB9XG5cbiAgICAgICAgLm1lbnUtaXRlbTpob3ZlciB7XG4gICAgICAgICAgYmFja2dyb3VuZC1jb2xvcjogJHtjb2xvcnMubGlnaHRHcmV5fTtcbiAgICAgICAgICBjb2xvcjogIzAwMDtcbiAgICAgICAgfVxuXG4gICAgICAgIC5tZW51LWl0ZW0uc2VsZWN0ZWQ6aG92ZXIge1xuICAgICAgICAgIGJhY2tncm91bmQtY29sb3I6IG5vbmU7XG4gICAgICAgICAgY3Vyc29yOiBpbml0aWFsO1xuICAgICAgICB9XG5cbiAgICAgICAgLnN1Yi1jYXQge1xuICAgICAgICAgIHBhZGRpbmctYm90dG9tOiAwLjJlbTtcbiAgICAgICAgfVxuXG4gICAgICAgIC5zdWItdGl0bGUge1xuICAgICAgICAgIGZvbnQtc2l6ZTogbGFyZ2VyO1xuICAgICAgICAgIHRleHQtdHJhbnNmb3JtOiBjYXBpdGFsaXplO1xuICAgICAgICAgIHBhZGRpbmc6IDAuNWVtIDAuNGVtO1xuICAgICAgICAgIGJhY2tncm91bmQtY29sb3I6ICMwMDAwMDA2NjtcbiAgICAgICAgfVxuXG4gICAgICAgIHNwYW4ge1xuICAgICAgICAgIG1hcmdpbi1yaWdodDogMC40ZW07XG4gICAgICAgIH1cbiAgICAgICAgYH08L3N0eWxlPlxuICAgIDwvZGl2PlxuICApXG59XG5cbk1hcFNlbGVjdG9yLnByb3BUeXBlcyA9IHtcbiAgbWFwSWR4OiBQcm9wVHlwZXMubnVtYmVyLmlzUmVxdWlyZWQsXG4gIHNlbGVjdE1hcDogUHJvcFR5cGVzLmZ1bmMuaXNSZXF1aXJlZFxufVxuXG5leHBvcnQgZGVmYXVsdCBNYXBTZWxlY3RvclxuIl19 */\n/*@ sourceURL=/Users/jerome/opencovid19-fr/dashboard/components/map-selector.js */")));
+  }, ".switch.__jsx-style-dynamic-selector{display:-webkit-box;display:-webkit-flex;display:-ms-flexbox;display:flex;-webkit-flex-direction:column;-ms-flex-direction:column;flex-direction:column;}.header.__jsx-style-dynamic-selector{display:-webkit-box;display:-webkit-flex;display:-ms-flexbox;display:flex;-webkit-box-pack:justify;-webkit-justify-content:space-between;-ms-flex-pack:justify;justify-content:space-between;-webkit-align-items:center;-webkit-box-align:center;-ms-flex-align:center;align-items:center;padding:0.5em;}.switch.__jsx-style-dynamic-selector:hover{cursor:pointer;}.menu.__jsx-style-dynamic-selector{display:-webkit-box;display:-webkit-flex;display:-ms-flexbox;display:flex;-webkit-flex-direction:column;-ms-flex-direction:column;flex-direction:column;}.menu-item.__jsx-style-dynamic-selector{display:-webkit-box;display:-webkit-flex;display:-ms-flexbox;display:flex;-webkit-align-items:center;-webkit-box-align:center;-ms-flex-align:center;align-items:center;padding:0.2em 0.5em;}.menu-item.__jsx-style-dynamic-selector:hover{background-color:".concat(_styles_colors__WEBPACK_IMPORTED_MODULE_6__["default"].lightGrey, ";color:#000;}.menu-item.selected.__jsx-style-dynamic-selector:hover{background-color:none;cursor:initial;}.sub-cat.__jsx-style-dynamic-selector{padding-bottom:0.2em;}.sub-title.__jsx-style-dynamic-selector{font-size:larger;text-transform:capitalize;padding:0.5em 0.4em;background-color:#00000066;}span.__jsx-style-dynamic-selector{margin-right:0.4em;}\n/*# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbIi9Vc2Vycy9qZXJvbWUvb3BlbmNvdmlkMTktZnIvZGFzaGJvYXJkL2NvbXBvbmVudHMvbWFwLXNlbGVjdG9yLmpzIl0sIm5hbWVzIjpbXSwibWFwcGluZ3MiOiJBQWlEa0IsQUFHd0IsQUFLQSxBQU9FLEFBSUYsQUFLQSxBQU1pQyxBQUt4QixBQUtELEFBSUosQUFPRSxlQW5DckIsRUE2QjRCLEVBTzVCLEVBWEEsQ0FMaUIsZUFDakIsTUFTc0IsR0FmVCxXQUNiLE1BZTZCLFdBM0NMLEFBS1EsQUFXUixBQUtILGdCQXVCckIsOERBM0NBLEFBZ0JBLGVBS3NCLG9CQUN0QixFQWpCcUIsNkZBQ0wsY0FDaEIiLCJmaWxlIjoiL1VzZXJzL2plcm9tZS9vcGVuY292aWQxOS1mci9kYXNoYm9hcmQvY29tcG9uZW50cy9tYXAtc2VsZWN0b3IuanMiLCJzb3VyY2VzQ29udGVudCI6WyJpbXBvcnQgUmVhY3QsIHt1c2VTdGF0ZSwgdXNlQ2FsbGJhY2ssIHVzZUNvbnRleHR9IGZyb20gJ3JlYWN0J1xuaW1wb3J0IFByb3BUeXBlcyBmcm9tICdwcm9wLXR5cGVzJ1xuaW1wb3J0IHtpbmRleE9mLCB1bmlxfSBmcm9tICdsb2Rhc2gnXG5pbXBvcnQge0NoZXZyb25Eb3duLCBDaGV2cm9uVXAsIENoZWNrfSBmcm9tICdyZWFjdC1mZWF0aGVyJ1xuXG5pbXBvcnQgY29sb3JzIGZyb20gJy4uL3N0eWxlcy9jb2xvcnMnXG5cbmltcG9ydCB7QXBwQ29udGV4dH0gZnJvbSAnLi4vcGFnZXMnXG5cbmNvbnN0IE1hcFNlbGVjdG9yID0gKHttYXBJZHgsIHNlbGVjdE1hcH0pID0+IHtcbiAgY29uc3Qge21hcHN9ID0gdXNlQ29udGV4dChBcHBDb250ZXh0KVxuICBjb25zdCBzZWxlY3RlZE1hcCA9IG1hcHNbbWFwSWR4XVxuXG4gIGNvbnN0IFtpc09wZW4sIHNldElzT3Blbl0gPSB1c2VTdGF0ZShmYWxzZSlcblxuICBjb25zdCBoYW5kbGVNYXAgPSB1c2VDYWxsYmFjayhtYXAgPT4ge1xuICAgIHNlbGVjdE1hcChtYXApXG4gICAgc2V0SXNPcGVuKGZhbHNlKVxuICB9LCBbc2VsZWN0TWFwXSlcblxuICBjb25zdCBjYXRlZ29yaWVzID0gdW5pcShtYXBzLm1hcChtYXAgPT4gbWFwLmNhdGVnb3J5KSlcblxuICByZXR1cm4gKFxuICAgIDxkaXYgY2xhc3NOYW1lPSdzd2l0Y2gnPlxuICAgICAgPGRpdiBjbGFzc05hbWU9J2hlYWRlcicgb25DbGljaz17KCkgPT4gc2V0SXNPcGVuKCFpc09wZW4pfT5cbiAgICAgICAgPHNwYW4+e3NlbGVjdGVkTWFwLm5hbWV9IC0gbWFpbGxlIHtzZWxlY3RlZE1hcC5jYXRlZ29yeX08L3NwYW4+IHtpc09wZW4gPyA8Q2hldnJvbkRvd24gLz4gOiA8Q2hldnJvblVwIC8+fVxuICAgICAgPC9kaXY+XG4gICAgICB7aXNPcGVuICYmIChcbiAgICAgICAgPGRpdiBjbGFzc05hbWU9J21lbnUnPlxuICAgICAgICAgIHtjYXRlZ29yaWVzLm1hcChjYXQgPT4gKFxuICAgICAgICAgICAgPGRpdiBrZXk9e2NhdH0gY2xhc3NOYW1lPSdzdWItY2F0Jz5cbiAgICAgICAgICAgICAgPGRpdiBjbGFzc05hbWU9J3N1Yi10aXRsZSc+e2NhdH08L2Rpdj5cbiAgICAgICAgICAgICAge21hcHMuZmlsdGVyKCh7Y2F0ZWdvcnl9KSA9PiBjYXRlZ29yeSA9PT0gY2F0KS5tYXAobWFwID0+IHtcbiAgICAgICAgICAgICAgICBjb25zdCBpbmRleCA9IGluZGV4T2YobWFwcywgbWFwKVxuICAgICAgICAgICAgICAgIHJldHVybiAoXG4gICAgICAgICAgICAgICAgICA8ZGl2XG4gICAgICAgICAgICAgICAgICAgIGtleT17bWFwLm5hbWV9XG4gICAgICAgICAgICAgICAgICAgIGNsYXNzTmFtZT17YG1lbnUtaXRlbSAke2luZGV4ID09PSBtYXBJZHggPyAnc2VsZWN0ZWQnIDogJyd9YH1cbiAgICAgICAgICAgICAgICAgICAgb25DbGljaz17KCkgPT4gaGFuZGxlTWFwKGluZGV4KX1cbiAgICAgICAgICAgICAgICAgID5cbiAgICAgICAgICAgICAgICAgICAgPHNwYW4+e21hcC5uYW1lfTwvc3Bhbj4ge2luZGV4ID09PSBtYXBJZHggJiYgPENoZWNrIC8+fVxuICAgICAgICAgICAgICAgICAgPC9kaXY+XG4gICAgICAgICAgICAgICAgKVxuICAgICAgICAgICAgICB9KX1cbiAgICAgICAgICAgIDwvZGl2PlxuICAgICAgICAgICkpfVxuICAgICAgICA8L2Rpdj5cbiAgICAgICl9XG5cbiAgICAgIDxzdHlsZSBqc3g+e2BcbiAgICAgICAgLnN3aXRjaCB7XG4gICAgICAgICAgZGlzcGxheTogZmxleDtcbiAgICAgICAgICBmbGV4LWRpcmVjdGlvbjogY29sdW1uO1xuICAgICAgICB9XG5cbiAgICAgICAgLmhlYWRlciB7XG4gICAgICAgICAgZGlzcGxheTogZmxleDtcbiAgICAgICAgICBqdXN0aWZ5LWNvbnRlbnQ6IHNwYWNlLWJldHdlZW47XG4gICAgICAgICAgYWxpZ24taXRlbXM6IGNlbnRlcjtcbiAgICAgICAgICBwYWRkaW5nOiAwLjVlbTtcbiAgICAgICAgfVxuXG4gICAgICAgIC5zd2l0Y2g6aG92ZXIge1xuICAgICAgICAgIGN1cnNvcjogcG9pbnRlcjtcbiAgICAgICAgfVxuXG4gICAgICAgIC5tZW51IHtcbiAgICAgICAgICBkaXNwbGF5OiBmbGV4O1xuICAgICAgICAgIGZsZXgtZGlyZWN0aW9uOiBjb2x1bW47XG4gICAgICAgIH1cblxuICAgICAgICAubWVudS1pdGVtIHtcbiAgICAgICAgICBkaXNwbGF5OiBmbGV4O1xuICAgICAgICAgIGFsaWduLWl0ZW1zOiBjZW50ZXI7XG4gICAgICAgICAgcGFkZGluZzogMC4yZW0gMC41ZW07XG4gICAgICAgIH1cblxuICAgICAgICAubWVudS1pdGVtOmhvdmVyIHtcbiAgICAgICAgICBiYWNrZ3JvdW5kLWNvbG9yOiAke2NvbG9ycy5saWdodEdyZXl9O1xuICAgICAgICAgIGNvbG9yOiAjMDAwO1xuICAgICAgICB9XG5cbiAgICAgICAgLm1lbnUtaXRlbS5zZWxlY3RlZDpob3ZlciB7XG4gICAgICAgICAgYmFja2dyb3VuZC1jb2xvcjogbm9uZTtcbiAgICAgICAgICBjdXJzb3I6IGluaXRpYWw7XG4gICAgICAgIH1cblxuICAgICAgICAuc3ViLWNhdCB7XG4gICAgICAgICAgcGFkZGluZy1ib3R0b206IDAuMmVtO1xuICAgICAgICB9XG5cbiAgICAgICAgLnN1Yi10aXRsZSB7XG4gICAgICAgICAgZm9udC1zaXplOiBsYXJnZXI7XG4gICAgICAgICAgdGV4dC10cmFuc2Zvcm06IGNhcGl0YWxpemU7XG4gICAgICAgICAgcGFkZGluZzogMC41ZW0gMC40ZW07XG4gICAgICAgICAgYmFja2dyb3VuZC1jb2xvcjogIzAwMDAwMDY2O1xuICAgICAgICB9XG5cbiAgICAgICAgc3BhbiB7XG4gICAgICAgICAgbWFyZ2luLXJpZ2h0OiAwLjRlbTtcbiAgICAgICAgfVxuICAgICAgICBgfTwvc3R5bGU+XG4gICAgPC9kaXY+XG4gIClcbn1cblxuTWFwU2VsZWN0b3IucHJvcFR5cGVzID0ge1xuICBtYXBJZHg6IFByb3BUeXBlcy5udW1iZXIuaXNSZXF1aXJlZCxcbiAgc2VsZWN0TWFwOiBQcm9wVHlwZXMuZnVuYy5pc1JlcXVpcmVkXG59XG5cbmV4cG9ydCBkZWZhdWx0IE1hcFNlbGVjdG9yXG4iXX0= */\n/*@ sourceURL=/Users/jerome/opencovid19-fr/dashboard/components/map-selector.js */")));
 };
 
 MapSelector.propTypes = {
@@ -1087,117 +1353,6 @@ Meta.defaultProps = {
 
 /***/ }),
 
-/***/ "./components/national-statistics.js":
-/*!*******************************************!*\
-  !*** ./components/national-statistics.js ***!
-  \*******************************************/
-/*! exports provided: default */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-__webpack_require__.r(__webpack_exports__);
-/* harmony import */ var styled_jsx_style__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! styled-jsx/style */ "./node_modules/styled-jsx/style.js");
-/* harmony import */ var styled_jsx_style__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(styled_jsx_style__WEBPACK_IMPORTED_MODULE_0__);
-/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react */ "./node_modules/react/index.js");
-/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
-/* harmony import */ var _styles_colors__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../styles/colors */ "./styles/colors.js");
-/* harmony import */ var _pages__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../pages */ "./pages/index.js");
-/* harmony import */ var _counters__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./counters */ "./components/counters.js");
-/* harmony import */ var _charts_mixed_chart__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./charts/mixed-chart */ "./components/charts/mixed-chart.js");
-/* harmony import */ var _charts_confirmes_chart__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./charts/confirmes-chart */ "./components/charts/confirmes-chart.js");
-/* harmony import */ var _charts_deces_chart__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ./charts/deces-chart */ "./components/charts/deces-chart.js");
-var _jsxFileName = "/Users/jerome/opencovid19-fr/dashboard/components/national-statistics.js";
-
-var __jsx = react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement;
-
-
-
-
-
-
-
-var charts = {
-  mixed: {
-    name: 'Cas confirmés & décès',
-    chart: _charts_mixed_chart__WEBPACK_IMPORTED_MODULE_5__["default"]
-  },
-  confirmed: {
-    name: 'Cas confirmés',
-    chart: _charts_confirmes_chart__WEBPACK_IMPORTED_MODULE_6__["default"]
-  },
-  deces: {
-    name: 'Décès',
-    chart: _charts_deces_chart__WEBPACK_IMPORTED_MODULE_7__["default"]
-  }
-};
-
-var NationalStatistics = function NationalStatistics() {
-  var _useContext = Object(react__WEBPACK_IMPORTED_MODULE_1__["useContext"])(_pages__WEBPACK_IMPORTED_MODULE_3__["AppContext"]),
-      date = _useContext.date,
-      franceReport = _useContext.franceReport,
-      isMobileDevice = _useContext.isMobileDevice;
-
-  var _useState = Object(react__WEBPACK_IMPORTED_MODULE_1__["useState"])('mixed'),
-      selectedChart = _useState[0],
-      setSelectedChart = _useState[1];
-
-  var Chart = charts[selectedChart].chart;
-  return __jsx(react__WEBPACK_IMPORTED_MODULE_1___default.a.Fragment, null, __jsx(_counters__WEBPACK_IMPORTED_MODULE_4__["default"], {
-    report: franceReport,
-    __source: {
-      fileName: _jsxFileName,
-      lineNumber: 35
-    },
-    __self: this
-  }), franceReport && franceReport.history && __jsx("div", {
-    className: styled_jsx_style__WEBPACK_IMPORTED_MODULE_0___default.a.dynamic([["223606565", [_styles_colors__WEBPACK_IMPORTED_MODULE_2__["default"].lightGrey, _styles_colors__WEBPACK_IMPORTED_MODULE_2__["default"].darkerGrey, _styles_colors__WEBPACK_IMPORTED_MODULE_2__["default"].darkGrey]]]),
-    __source: {
-      fileName: _jsxFileName,
-      lineNumber: 38
-    },
-    __self: this
-  }, __jsx(Chart, {
-    data: franceReport.history.filter(function (r) {
-      return date >= r.date;
-    }),
-    height: isMobileDevice ? 280 : 300,
-    className: styled_jsx_style__WEBPACK_IMPORTED_MODULE_0___default.a.dynamic([["223606565", [_styles_colors__WEBPACK_IMPORTED_MODULE_2__["default"].lightGrey, _styles_colors__WEBPACK_IMPORTED_MODULE_2__["default"].darkerGrey, _styles_colors__WEBPACK_IMPORTED_MODULE_2__["default"].darkGrey]]]),
-    __source: {
-      fileName: _jsxFileName,
-      lineNumber: 39
-    },
-    __self: this
-  }), __jsx("div", {
-    className: styled_jsx_style__WEBPACK_IMPORTED_MODULE_0___default.a.dynamic([["223606565", [_styles_colors__WEBPACK_IMPORTED_MODULE_2__["default"].lightGrey, _styles_colors__WEBPACK_IMPORTED_MODULE_2__["default"].darkerGrey, _styles_colors__WEBPACK_IMPORTED_MODULE_2__["default"].darkGrey]]]) + " " + 'charts-list',
-    __source: {
-      fileName: _jsxFileName,
-      lineNumber: 40
-    },
-    __self: this
-  }, Object.keys(charts).map(function (chart) {
-    return __jsx("div", {
-      key: chart,
-      onClick: function onClick() {
-        return setSelectedChart(chart);
-      },
-      className: styled_jsx_style__WEBPACK_IMPORTED_MODULE_0___default.a.dynamic([["223606565", [_styles_colors__WEBPACK_IMPORTED_MODULE_2__["default"].lightGrey, _styles_colors__WEBPACK_IMPORTED_MODULE_2__["default"].darkerGrey, _styles_colors__WEBPACK_IMPORTED_MODULE_2__["default"].darkGrey]]]) + " " + "chart-name ".concat(chart === selectedChart ? 'selected' : ''),
-      __source: {
-        fileName: _jsxFileName,
-        lineNumber: 42
-      },
-      __self: this
-    }, charts[chart].name);
-  }))), __jsx(styled_jsx_style__WEBPACK_IMPORTED_MODULE_0___default.a, {
-    id: "223606565",
-    dynamic: [_styles_colors__WEBPACK_IMPORTED_MODULE_2__["default"].lightGrey, _styles_colors__WEBPACK_IMPORTED_MODULE_2__["default"].darkerGrey, _styles_colors__WEBPACK_IMPORTED_MODULE_2__["default"].darkGrey],
-    __self: this
-  }, ".charts-list.__jsx-style-dynamic-selector{display:-webkit-box;display:-webkit-flex;display:-ms-flexbox;display:flex;-webkit-box-pack:space-around;-webkit-justify-content:space-around;-ms-flex-pack:space-around;justify-content:space-around;-webkit-align-items:center;-webkit-box-align:center;-ms-flex-align:center;align-items:center;}.chart-name.__jsx-style-dynamic-selector{background-color:".concat(_styles_colors__WEBPACK_IMPORTED_MODULE_2__["default"].lightGrey, ";color:#fff;border-radius:4px;padding:0.2em 0.4em;}.chart-name.__jsx-style-dynamic-selector:hover{cursor:pointer;background-color:").concat(_styles_colors__WEBPACK_IMPORTED_MODULE_2__["default"].darkerGrey, ";}.chart-name.selected.__jsx-style-dynamic-selector{background-color:").concat(_styles_colors__WEBPACK_IMPORTED_MODULE_2__["default"].darkGrey, ";}\n/*# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbIi9Vc2Vycy9qZXJvbWUvb3BlbmNvdmlkMTktZnIvZGFzaGJvYXJkL2NvbXBvbmVudHMvbmF0aW9uYWwtc3RhdGlzdGljcy5qcyJdLCJuYW1lcyI6W10sIm1hcHBpbmdzIjoiQUFxRGtCLEFBR3dCLEFBTWlDLEFBTy9CLEFBSytCLGVBSkEsK0JBUG5DLEFBWWIsV0FYb0IsSUFPcEIsYUFkK0IsQ0FRVCxvQkFDdEIsc0dBUnFCLDZGQUNyQiIsImZpbGUiOiIvVXNlcnMvamVyb21lL29wZW5jb3ZpZDE5LWZyL2Rhc2hib2FyZC9jb21wb25lbnRzL25hdGlvbmFsLXN0YXRpc3RpY3MuanMiLCJzb3VyY2VzQ29udGVudCI6WyJpbXBvcnQgUmVhY3QsIHt1c2VDb250ZXh0LCB1c2VTdGF0ZX0gZnJvbSAncmVhY3QnXG5cbmltcG9ydCBjb2xvcnMgZnJvbSAnLi4vc3R5bGVzL2NvbG9ycydcblxuaW1wb3J0IHtBcHBDb250ZXh0fSBmcm9tICcuLi9wYWdlcydcblxuaW1wb3J0IENvdW50ZXJzIGZyb20gJy4vY291bnRlcnMnXG5pbXBvcnQgTWl4ZWRDaGFydCBmcm9tICcuL2NoYXJ0cy9taXhlZC1jaGFydCdcbmltcG9ydCBDb25maXJtZXNDaGFydCBmcm9tICcuL2NoYXJ0cy9jb25maXJtZXMtY2hhcnQnXG5pbXBvcnQgRGVjZXNDaGFydCBmcm9tICcuL2NoYXJ0cy9kZWNlcy1jaGFydCdcblxuY29uc3QgY2hhcnRzID0ge1xuICBtaXhlZDoge1xuICAgIG5hbWU6ICdDYXMgY29uZmlybcOpcyAmIGTDqWPDqHMnLFxuICAgIGNoYXJ0OiBNaXhlZENoYXJ0XG4gIH0sXG4gIGNvbmZpcm1lZDoge1xuICAgIG5hbWU6ICdDYXMgY29uZmlybcOpcycsXG4gICAgY2hhcnQ6IENvbmZpcm1lc0NoYXJ0XG4gIH0sXG4gIGRlY2VzOiB7XG4gICAgbmFtZTogJ0TDqWPDqHMnLFxuICAgIGNoYXJ0OiBEZWNlc0NoYXJ0XG4gIH1cbn1cblxuY29uc3QgTmF0aW9uYWxTdGF0aXN0aWNzID0gKCkgPT4ge1xuICBjb25zdCB7ZGF0ZSwgZnJhbmNlUmVwb3J0LCBpc01vYmlsZURldmljZX0gPSB1c2VDb250ZXh0KEFwcENvbnRleHQpXG5cbiAgY29uc3QgW3NlbGVjdGVkQ2hhcnQsIHNldFNlbGVjdGVkQ2hhcnRdID0gdXNlU3RhdGUoJ21peGVkJylcbiAgY29uc3QgQ2hhcnQgPSBjaGFydHNbc2VsZWN0ZWRDaGFydF0uY2hhcnRcblxuICByZXR1cm4gKFxuICAgIDw+XG4gICAgICA8Q291bnRlcnMgcmVwb3J0PXtmcmFuY2VSZXBvcnR9IC8+XG5cbiAgICAgIHtmcmFuY2VSZXBvcnQgJiYgZnJhbmNlUmVwb3J0Lmhpc3RvcnkgJiYgKFxuICAgICAgICA8ZGl2PlxuICAgICAgICAgIDxDaGFydCBkYXRhPXtmcmFuY2VSZXBvcnQuaGlzdG9yeS5maWx0ZXIociA9PiBkYXRlID49IHIuZGF0ZSl9IGhlaWdodD17aXNNb2JpbGVEZXZpY2UgPyAyODAgOiAzMDB9IC8+XG4gICAgICAgICAgPGRpdiBjbGFzc05hbWU9J2NoYXJ0cy1saXN0Jz5cbiAgICAgICAgICAgIHtPYmplY3Qua2V5cyhjaGFydHMpLm1hcChjaGFydCA9PiAoXG4gICAgICAgICAgICAgIDxkaXZcbiAgICAgICAgICAgICAgICBrZXk9e2NoYXJ0fVxuICAgICAgICAgICAgICAgIGNsYXNzTmFtZT17YGNoYXJ0LW5hbWUgJHtjaGFydCA9PT0gc2VsZWN0ZWRDaGFydCA/ICdzZWxlY3RlZCcgOiAnJ31gfVxuICAgICAgICAgICAgICAgIG9uQ2xpY2s9eygpID0+IHNldFNlbGVjdGVkQ2hhcnQoY2hhcnQpfVxuICAgICAgICAgICAgICA+XG4gICAgICAgICAgICAgICAge2NoYXJ0c1tjaGFydF0ubmFtZX1cbiAgICAgICAgICAgICAgPC9kaXY+XG4gICAgICAgICAgICApKX1cbiAgICAgICAgICA8L2Rpdj5cbiAgICAgICAgPC9kaXY+XG4gICAgICApfVxuXG4gICAgICA8c3R5bGUganN4PntgXG4gICAgICAgIC5jaGFydHMtbGlzdCB7XG4gICAgICAgICAgZGlzcGxheTogZmxleDtcbiAgICAgICAgICBqdXN0aWZ5LWNvbnRlbnQ6IHNwYWNlLWFyb3VuZDtcbiAgICAgICAgICBhbGlnbi1pdGVtczogY2VudGVyO1xuICAgICAgICB9XG5cbiAgICAgICAgLmNoYXJ0LW5hbWUge1xuICAgICAgICAgIGJhY2tncm91bmQtY29sb3I6ICR7Y29sb3JzLmxpZ2h0R3JleX07XG4gICAgICAgICAgY29sb3I6ICNmZmY7XG4gICAgICAgICAgYm9yZGVyLXJhZGl1czogNHB4O1xuICAgICAgICAgIHBhZGRpbmc6IDAuMmVtIDAuNGVtO1xuICAgICAgICB9XG5cbiAgICAgICAgLmNoYXJ0LW5hbWU6aG92ZXIge1xuICAgICAgICAgIGN1cnNvcjogcG9pbnRlcjtcbiAgICAgICAgICBiYWNrZ3JvdW5kLWNvbG9yOiAke2NvbG9ycy5kYXJrZXJHcmV5fTtcbiAgICAgICAgfVxuXG4gICAgICAgIC5jaGFydC1uYW1lLnNlbGVjdGVkIHtcbiAgICAgICAgICBiYWNrZ3JvdW5kLWNvbG9yOiAke2NvbG9ycy5kYXJrR3JleX07XG4gICAgICAgIH1cbiAgICAgICAgYH08L3N0eWxlPlxuICAgIDwvPlxuICApXG59XG5cbmV4cG9ydCBkZWZhdWx0IE5hdGlvbmFsU3RhdGlzdGljc1xuIl19 */\n/*@ sourceURL=/Users/jerome/opencovid19-fr/dashboard/components/national-statistics.js */")));
-};
-
-/* harmony default export */ __webpack_exports__["default"] = (NationalStatistics);
-
-/***/ }),
-
 /***/ "./components/react-map-gl/index.js":
 /*!******************************************!*\
   !*** ./components/react-map-gl/index.js ***!
@@ -1214,9 +1369,11 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! react */ "./node_modules/react/index.js");
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_3___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_3__);
 /* harmony import */ var react_map_gl__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! react-map-gl */ "./node_modules/react-map-gl/dist/esm/index.js");
-/* harmony import */ var _pages__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../../pages */ "./pages/index.js");
-/* harmony import */ var _sumup__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./sumup */ "./components/react-map-gl/sumup.js");
+/* harmony import */ var react_feather__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! react-feather */ "./node_modules/react-feather/dist/index.js");
+/* harmony import */ var _pages__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ../../pages */ "./pages/index.js");
 /* harmony import */ var _map_selector__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ../map-selector */ "./components/map-selector.js");
+/* harmony import */ var _sumup__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ./sumup */ "./components/react-map-gl/sumup.js");
+/* harmony import */ var _statistics__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ../statistics */ "./components/statistics.js");
 
 
 var _jsxFileName = "/Users/jerome/opencovid19-fr/dashboard/components/react-map-gl/index.js";
@@ -1227,8 +1384,10 @@ var __jsx = react__WEBPACK_IMPORTED_MODULE_3___default.a.createElement;
 
 
 
+
+
 var settings = {
-  maxZoom: 16
+  maxZoom: 10
 };
 
 var Map = function Map() {
@@ -1236,7 +1395,15 @@ var Map = function Map() {
       selectedMapIdx = _useState[0],
       setSelectedMapIdx = _useState[1];
 
-  var app = Object(react__WEBPACK_IMPORTED_MODULE_3__["useContext"])(_pages__WEBPACK_IMPORTED_MODULE_5__["AppContext"]);
+  var _useContext = Object(react__WEBPACK_IMPORTED_MODULE_3__["useContext"])(_pages__WEBPACK_IMPORTED_MODULE_6__["AppContext"]),
+      selectedLocationReport = _useContext.selectedLocationReport,
+      setSelectedLocation = _useContext.setSelectedLocation,
+      isIframe = _useContext.isIframe,
+      viewport = _useContext.viewport,
+      maps = _useContext.maps,
+      setViewport = _useContext.setViewport,
+      isGouv = _useContext.isGouv,
+      isMobileDevice = _useContext.isMobileDevice;
 
   var _useState2 = Object(react__WEBPACK_IMPORTED_MODULE_3__["useState"])(),
       map = _useState2[0],
@@ -1273,62 +1440,110 @@ var Map = function Map() {
     setHovered(hoverInfo);
   };
 
+  var onClick = function onClick(event) {
+    event.stopPropagation();
+    var feature = event.features && event.features[0];
+
+    if (feature) {
+      var properties = feature.properties;
+      setSelectedLocation(properties.code);
+    } else {
+      setSelectedLocation(null);
+    }
+
+    setHovered(null);
+  };
+
   return __jsx("div", {
-    className: styled_jsx_style__WEBPACK_IMPORTED_MODULE_2___default.a.dynamic([["4278340552", [app.isMobileDevice ? 'calc(100% - 1em)' : 'none']]]) + " " + 'map-container',
+    className: "jsx-1156507173" + " " + 'map-container',
     __source: {
       fileName: _jsxFileName,
-      lineNumber: 46
+      lineNumber: 71
     },
     __self: this
-  }, __jsx(react_map_gl__WEBPACK_IMPORTED_MODULE_4__["default"], Object(_babel_runtime_helpers_esm_extends__WEBPACK_IMPORTED_MODULE_0__["default"])({
-    ReuseMaps: true,
-    ref: mapRef
-  }, app.viewport, {
-    width: "100%",
-    height: "100%",
-    mapStyle: "https://openmaptiles.geo.data.gouv.fr/styles/osm-bright/style.json"
-  }, settings, {
-    interactiveLayerIds: app.maps[selectedMapIdx].layers.map(function (layer) {
-      return layer.id;
-    }),
-    onViewportChange: app.setViewport,
-    onHover: onHover,
+  }, __jsx("div", {
+    className: "jsx-1156507173" + " " + 'controls',
     __source: {
       fileName: _jsxFileName,
-      lineNumber: 47
+      lineNumber: 72
     },
     __self: this
-  }), __jsx("div", {
-    className: styled_jsx_style__WEBPACK_IMPORTED_MODULE_2___default.a.dynamic([["4278340552", [app.isMobileDevice ? 'calc(100% - 1em)' : 'none']]]) + " " + 'map-switch',
+  }, __jsx("div", {
+    className: "jsx-1156507173" + " " + 'control',
     __source: {
       fileName: _jsxFileName,
-      lineNumber: 59
+      lineNumber: 73
     },
     __self: this
-  }, __jsx(_map_selector__WEBPACK_IMPORTED_MODULE_7__["default"], {
+  }, !isGouv && __jsx(_map_selector__WEBPACK_IMPORTED_MODULE_7__["default"], {
     mapIdx: selectedMapIdx,
     selectMap: setSelectedMapIdx,
     __source: {
       fileName: _jsxFileName,
-      lineNumber: 60
+      lineNumber: 74
     },
     __self: this
-  })), __jsx(react_map_gl__WEBPACK_IMPORTED_MODULE_4__["Source"], {
-    type: "geojson",
-    id: "cas-confirmes",
-    data: app.maps[selectedMapIdx].data,
+  })), isIframe && __jsx("div", {
+    className: "jsx-1156507173" + " " + 'control maximize',
     __source: {
       fileName: _jsxFileName,
-      lineNumber: 63
+      lineNumber: 78
     },
     __self: this
-  }, app.maps[selectedMapIdx].layers.map(function (layer) {
+  }, __jsx("a", {
+    href: "https://veille-coronavirus.fr/",
+    target: "_top",
+    className: "jsx-1156507173",
+    __source: {
+      fileName: _jsxFileName,
+      lineNumber: 79
+    },
+    __self: this
+  }, __jsx(react_feather__WEBPACK_IMPORTED_MODULE_5__["Maximize2"], {
+    style: {
+      verticalAalign: 'middle'
+    },
+    __source: {
+      fileName: _jsxFileName,
+      lineNumber: 79
+    },
+    __self: this
+  })))), __jsx(react_map_gl__WEBPACK_IMPORTED_MODULE_4__["default"], Object(_babel_runtime_helpers_esm_extends__WEBPACK_IMPORTED_MODULE_0__["default"])({
+    ReuseMaps: true,
+    ref: mapRef
+  }, viewport, {
+    width: "100%",
+    height: "100%",
+    mapStyle: "https://openmaptiles.geo.data.gouv.fr/styles/osm-bright/style.json"
+  }, settings, {
+    interactiveLayerIds: maps[selectedMapIdx].layers.map(function (layer) {
+      return layer.id;
+    }),
+    onViewportChange: setViewport,
+    onHover: isMobileDevice ? null : onHover,
+    onClick: onClick,
+    __source: {
+      fileName: _jsxFileName,
+      lineNumber: 84
+    },
+    __self: this
+  }), __jsx(react_map_gl__WEBPACK_IMPORTED_MODULE_4__["Source"], {
+    type: "geojson",
+    id: "cas-confirmes",
+    attribution: "Donn\xE9es Minist\xE8re des Solidarit\xE9s et de la Sant\xE9",
+    data: maps[selectedMapIdx].data,
+    __source: {
+      fileName: _jsxFileName,
+      lineNumber: 98
+    },
+    __self: this
+  }, maps[selectedMapIdx].layers.map(function (layer) {
     return __jsx(react_map_gl__WEBPACK_IMPORTED_MODULE_4__["Layer"], Object(_babel_runtime_helpers_esm_extends__WEBPACK_IMPORTED_MODULE_0__["default"])({
       key: layer.id
     }, layer, {
       __source: {
         fileName: _jsxFileName,
-        lineNumber: 69
+        lineNumber: 105
       },
       __self: this
     }));
@@ -1343,22 +1558,33 @@ var Map = function Map() {
     anchor: "bottom-left",
     __source: {
       fileName: _jsxFileName,
-      lineNumber: 74
+      lineNumber: 110
     },
     __self: this
-  }, __jsx(_sumup__WEBPACK_IMPORTED_MODULE_6__["default"], Object(_babel_runtime_helpers_esm_extends__WEBPACK_IMPORTED_MODULE_0__["default"])({
-    data: JSON.parse(hovered.feature.properties.history)
-  }, hovered.feature.properties, {
+  }, __jsx(_sumup__WEBPACK_IMPORTED_MODULE_8__["default"], {
+    nom: hovered.feature.properties.nom,
     __source: {
       fileName: _jsxFileName,
-      lineNumber: 82
+      lineNumber: 118
     },
     __self: this
-  })))), __jsx(styled_jsx_style__WEBPACK_IMPORTED_MODULE_2___default.a, {
-    id: "4278340552",
-    dynamic: [app.isMobileDevice ? 'calc(100% - 1em)' : 'none'],
+  }))), isMobileDevice && __jsx("div", {
+    className: "jsx-1156507173" + " " + "mobile-sumup ".concat(selectedLocationReport ? 'show' : 'hide'),
+    __source: {
+      fileName: _jsxFileName,
+      lineNumber: 124
+    },
     __self: this
-  }, ".map-container.__jsx-style-dynamic-selector{position:relative;width:100%;height:100%;}.map-switch.__jsx-style-dynamic-selector{position:absolute;margin:0.5em;width:".concat(app.isMobileDevice ? 'calc(100% - 1em)' : 'none', ";}\n/*# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbIi9Vc2Vycy9qZXJvbWUvb3BlbmNvdmlkMTktZnIvZGFzaGJvYXJkL2NvbXBvbmVudHMvcmVhY3QtbWFwLWdsL2luZGV4LmpzIl0sIm5hbWVzIjpbXSwibWFwcGluZ3MiOiJBQXFGa0IsQUFHNkIsQUFNQSxrQkFMUCxBQU1FLFdBTEQsRUFNdUIsVUFMckMseUJBTUEiLCJmaWxlIjoiL1VzZXJzL2plcm9tZS9vcGVuY292aWQxOS1mci9kYXNoYm9hcmQvY29tcG9uZW50cy9yZWFjdC1tYXAtZ2wvaW5kZXguanMiLCJzb3VyY2VzQ29udGVudCI6WyJpbXBvcnQgUmVhY3QsIHt1c2VTdGF0ZSwgdXNlQ2FsbGJhY2ssIHVzZUNvbnRleHR9IGZyb20gJ3JlYWN0J1xuaW1wb3J0IFJlYWN0TWFwR0wsIHtTb3VyY2UsIExheWVyLCBQb3B1cH0gZnJvbSAncmVhY3QtbWFwLWdsJ1xuXG5pbXBvcnQge0FwcENvbnRleHR9IGZyb20gJy4uLy4uL3BhZ2VzJ1xuXG5pbXBvcnQgU3VtVXAgZnJvbSAnLi9zdW11cCdcblxuaW1wb3J0IE1hcFNlbGVjdG9yIGZyb20gJy4uL21hcC1zZWxlY3RvcidcblxuY29uc3Qgc2V0dGluZ3MgPSB7XG4gIG1heFpvb206IDE2XG59XG5cbmNvbnN0IE1hcCA9ICgpID0+IHtcbiAgY29uc3QgW3NlbGVjdGVkTWFwSWR4LCBzZXRTZWxlY3RlZE1hcElkeF0gPSB1c2VTdGF0ZSgwKVxuXG4gIGNvbnN0IGFwcCA9IHVzZUNvbnRleHQoQXBwQ29udGV4dClcblxuICBjb25zdCBbbWFwLCBzZXRNYXBdID0gdXNlU3RhdGUoKVxuICBjb25zdCBbaG92ZXJlZCwgc2V0SG92ZXJlZF0gPSB1c2VTdGF0ZShudWxsKVxuXG4gIGNvbnN0IG1hcFJlZiA9IHVzZUNhbGxiYWNrKHJlZiA9PiB7XG4gICAgaWYgKHJlZikge1xuICAgICAgc2V0TWFwKHJlZi5nZXRNYXAoKSlcbiAgICB9XG4gIH0sIFtdKVxuXG4gIGNvbnN0IG9uSG92ZXIgPSBldmVudCA9PiB7XG4gICAgZXZlbnQuc3RvcFByb3BhZ2F0aW9uKClcbiAgICBjb25zdCBmZWF0dXJlID0gZXZlbnQuZmVhdHVyZXMgJiYgZXZlbnQuZmVhdHVyZXNbMF1cbiAgICBjb25zdCBbbG9uZ2l0dWRlLCBsYXRpdHVkZV0gPSBldmVudC5sbmdMYXRcbiAgICBsZXQgaG92ZXJJbmZvXG5cbiAgICBpZiAoZmVhdHVyZSkge1xuICAgICAgaG92ZXJJbmZvID0ge1xuICAgICAgICBsb25naXR1ZGUsXG4gICAgICAgIGxhdGl0dWRlLFxuICAgICAgICBmZWF0dXJlXG4gICAgICB9XG4gICAgfVxuXG4gICAgc2V0SG92ZXJlZChob3ZlckluZm8pXG4gIH1cblxuICByZXR1cm4gKFxuICAgIDxkaXYgY2xhc3NOYW1lPSdtYXAtY29udGFpbmVyJz5cbiAgICAgIDxSZWFjdE1hcEdMXG4gICAgICAgIFJldXNlTWFwc1xuICAgICAgICByZWY9e21hcFJlZn1cbiAgICAgICAgey4uLmFwcC52aWV3cG9ydH1cbiAgICAgICAgd2lkdGg9JzEwMCUnXG4gICAgICAgIGhlaWdodD0nMTAwJSdcbiAgICAgICAgbWFwU3R5bGU9J2h0dHBzOi8vb3Blbm1hcHRpbGVzLmdlby5kYXRhLmdvdXYuZnIvc3R5bGVzL29zbS1icmlnaHQvc3R5bGUuanNvbidcbiAgICAgICAgey4uLnNldHRpbmdzfVxuICAgICAgICBpbnRlcmFjdGl2ZUxheWVySWRzPXthcHAubWFwc1tzZWxlY3RlZE1hcElkeF0ubGF5ZXJzLm1hcChsYXllciA9PiBsYXllci5pZCl9XG4gICAgICAgIG9uVmlld3BvcnRDaGFuZ2U9e2FwcC5zZXRWaWV3cG9ydH1cbiAgICAgICAgb25Ib3Zlcj17b25Ib3Zlcn1cbiAgICAgID5cbiAgICAgICAgPGRpdiBjbGFzc05hbWU9J21hcC1zd2l0Y2gnPlxuICAgICAgICAgIDxNYXBTZWxlY3RvciBtYXBJZHg9e3NlbGVjdGVkTWFwSWR4fSBzZWxlY3RNYXA9e3NldFNlbGVjdGVkTWFwSWR4fSAvPlxuICAgICAgICA8L2Rpdj5cblxuICAgICAgICA8U291cmNlXG4gICAgICAgICAgdHlwZT0nZ2VvanNvbidcbiAgICAgICAgICBpZD0nY2FzLWNvbmZpcm1lcydcbiAgICAgICAgICBkYXRhPXthcHAubWFwc1tzZWxlY3RlZE1hcElkeF0uZGF0YX1cbiAgICAgICAgPlxuICAgICAgICAgIHthcHAubWFwc1tzZWxlY3RlZE1hcElkeF0ubGF5ZXJzLm1hcChsYXllciA9PiAoXG4gICAgICAgICAgICA8TGF5ZXIga2V5PXtsYXllci5pZH0gey4uLmxheWVyfSAvPlxuICAgICAgICAgICkpfVxuICAgICAgICA8L1NvdXJjZT5cblxuICAgICAgICB7aG92ZXJlZCAmJiAoXG4gICAgICAgICAgPFBvcHVwXG4gICAgICAgICAgICBsb25naXR1ZGU9e2hvdmVyZWQubG9uZ2l0dWRlfVxuICAgICAgICAgICAgbGF0aXR1ZGU9e2hvdmVyZWQubGF0aXR1ZGV9XG4gICAgICAgICAgICBjbG9zZUJ1dHRvbj17ZmFsc2V9XG4gICAgICAgICAgICBjbG9zZU9uQ2xpY2s9e2ZhbHNlfVxuICAgICAgICAgICAgb25DbG9zZT17KCkgPT4gc2V0SG92ZXJlZChudWxsKX1cbiAgICAgICAgICAgIGFuY2hvcj0nYm90dG9tLWxlZnQnXG4gICAgICAgICAgPlxuICAgICAgICAgICAgPFN1bVVwIGRhdGE9e0pTT04ucGFyc2UoaG92ZXJlZC5mZWF0dXJlLnByb3BlcnRpZXMuaGlzdG9yeSl9IHsuLi5ob3ZlcmVkLmZlYXR1cmUucHJvcGVydGllc30gLz5cbiAgICAgICAgICA8L1BvcHVwPlxuICAgICAgICApfVxuICAgICAgPC9SZWFjdE1hcEdMPlxuICAgICAgPHN0eWxlIGpzeD57YFxuICAgICAgICAubWFwLWNvbnRhaW5lciB7XG4gICAgICAgICAgcG9zaXRpb246IHJlbGF0aXZlO1xuICAgICAgICAgIHdpZHRoOiAxMDAlO1xuICAgICAgICAgIGhlaWdodDogMTAwJTtcbiAgICAgICAgfVxuXG4gICAgICAgIC5tYXAtc3dpdGNoIHtcbiAgICAgICAgICBwb3NpdGlvbjogYWJzb2x1dGU7XG4gICAgICAgICAgbWFyZ2luOiAwLjVlbTtcbiAgICAgICAgICB3aWR0aDogJHthcHAuaXNNb2JpbGVEZXZpY2UgPyAnY2FsYygxMDAlIC0gMWVtKScgOiAnbm9uZSd9O1xuICAgICAgICB9XG4gICAgICBgfTwvc3R5bGU+XG4gICAgPC9kaXY+XG4gIClcbn1cblxuZXhwb3J0IGRlZmF1bHQgTWFwXG4iXX0= */\n/*@ sourceURL=/Users/jerome/opencovid19-fr/dashboard/components/react-map-gl/index.js */")));
+  }, selectedLocationReport && __jsx(_statistics__WEBPACK_IMPORTED_MODULE_9__["default"], {
+    __source: {
+      fileName: _jsxFileName,
+      lineNumber: 126
+    },
+    __self: this
+  })), __jsx(styled_jsx_style__WEBPACK_IMPORTED_MODULE_2___default.a, {
+    id: "1156507173",
+    __self: this
+  }, ".map-container.jsx-1156507173{position:relative;width:100%;height:100%;}.controls.jsx-1156507173{z-index:1;position:absolute;display:-webkit-box;display:-webkit-flex;display:-ms-flexbox;display:flex;-webkit-box-pack:justify;-webkit-justify-content:space-between;-ms-flex-pack:justify;justify-content:space-between;-webkit-align-items:end;-webkit-box-align:end;-ms-flex-align:end;align-items:end;width:100%;padding:0.5em;}.control.jsx-1156507173{background-color:#000000aa;color:#fff;border-radius:4px;margin:0;}.maximize.jsx-1156507173{display:-webkit-box;display:-webkit-flex;display:-ms-flexbox;display:flex;right:0;border-radius:4px;background:#53514f;}.maximize.jsx-1156507173 a.jsx-1156507173{color:#fff;padding:0.4em 0.4em 0.2em 0.4em;}.mobile-sumup.jsx-1156507173{z-index:2;position:absolute;bottom:0;background-color:#fff;width:100%;margin:auto;padding:0.5em;-webkit-transition:0.5s;transition:0.5s;}.mobile-sumup.hide.jsx-1156507173{height:0;padding:0;}.mobile-sumup.show.jsx-1156507173{height:100%;}\n/*# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbIi9Vc2Vycy9qZXJvbWUvb3BlbmNvdmlkMTktZnIvZGFzaGJvYXJkL2NvbXBvbmVudHMvcmVhY3QtbWFwLWdsL2luZGV4LmpzIl0sIm5hbWVzIjpbXSwibWFwcGluZ3MiOiJBQWtJa0IsQUFHNkIsQUFNUixBQVVpQixBQU9kLEFBT0YsQUFLRCxBQVdELEFBS0csU0FKRixDQXhDUSxBQTZCQSxDQUxjLENBcUJsQyxNQW5EYSxDQStDYixRQS9CYSxDQVRFLEFBNkJKLENBbkNHLFFBb0NVLENBcEJKLEdBZnBCLEVBNkJBLGFBYlcsR0FvQkUsTUFuQmIsS0FvQmMsSUFoQkosUUFDVSxBQWdCSixjQUNFLElBaEJHLEVBakJXLGlCQWtCaEMsaUJBZ0JBLGlGQWpDa0IsaUZBQ0wsV0FDRyxjQUNoQiIsImZpbGUiOiIvVXNlcnMvamVyb21lL29wZW5jb3ZpZDE5LWZyL2Rhc2hib2FyZC9jb21wb25lbnRzL3JlYWN0LW1hcC1nbC9pbmRleC5qcyIsInNvdXJjZXNDb250ZW50IjpbImltcG9ydCBSZWFjdCwge3VzZVN0YXRlLCB1c2VDYWxsYmFjaywgdXNlQ29udGV4dH0gZnJvbSAncmVhY3QnXG5pbXBvcnQgUmVhY3RNYXBHTCwge1NvdXJjZSwgTGF5ZXIsIFBvcHVwfSBmcm9tICdyZWFjdC1tYXAtZ2wnXG5pbXBvcnQge01heGltaXplMn0gZnJvbSAncmVhY3QtZmVhdGhlcidcblxuaW1wb3J0IHtBcHBDb250ZXh0fSBmcm9tICcuLi8uLi9wYWdlcydcblxuaW1wb3J0IE1hcFNlbGVjdG9yIGZyb20gJy4uL21hcC1zZWxlY3RvcidcblxuaW1wb3J0IFN1bVVwIGZyb20gJy4vc3VtdXAnXG5pbXBvcnQgU3RhdGlzdGljcyBmcm9tICcuLi9zdGF0aXN0aWNzJ1xuXG5jb25zdCBzZXR0aW5ncyA9IHtcbiAgbWF4Wm9vbTogMTBcbn1cblxuY29uc3QgTWFwID0gKCkgPT4ge1xuICBjb25zdCBbc2VsZWN0ZWRNYXBJZHgsIHNldFNlbGVjdGVkTWFwSWR4XSA9IHVzZVN0YXRlKDApXG5cbiAgY29uc3Qge1xuICAgIHNlbGVjdGVkTG9jYXRpb25SZXBvcnQsXG4gICAgc2V0U2VsZWN0ZWRMb2NhdGlvbixcbiAgICBpc0lmcmFtZSxcbiAgICB2aWV3cG9ydCxcbiAgICBtYXBzLFxuICAgIHNldFZpZXdwb3J0LFxuICAgIGlzR291dixcbiAgICBpc01vYmlsZURldmljZVxuICB9ID0gdXNlQ29udGV4dChBcHBDb250ZXh0KVxuXG4gIGNvbnN0IFttYXAsIHNldE1hcF0gPSB1c2VTdGF0ZSgpXG4gIGNvbnN0IFtob3ZlcmVkLCBzZXRIb3ZlcmVkXSA9IHVzZVN0YXRlKG51bGwpXG5cbiAgY29uc3QgbWFwUmVmID0gdXNlQ2FsbGJhY2socmVmID0+IHtcbiAgICBpZiAocmVmKSB7XG4gICAgICBzZXRNYXAocmVmLmdldE1hcCgpKVxuICAgIH1cbiAgfSwgW10pXG5cbiAgY29uc3Qgb25Ib3ZlciA9IGV2ZW50ID0+IHtcbiAgICBldmVudC5zdG9wUHJvcGFnYXRpb24oKVxuICAgIGNvbnN0IGZlYXR1cmUgPSBldmVudC5mZWF0dXJlcyAmJiBldmVudC5mZWF0dXJlc1swXVxuICAgIGNvbnN0IFtsb25naXR1ZGUsIGxhdGl0dWRlXSA9IGV2ZW50LmxuZ0xhdFxuICAgIGxldCBob3ZlckluZm9cblxuICAgIGlmIChmZWF0dXJlKSB7XG4gICAgICBob3ZlckluZm8gPSB7XG4gICAgICAgIGxvbmdpdHVkZSxcbiAgICAgICAgbGF0aXR1ZGUsXG4gICAgICAgIGZlYXR1cmVcbiAgICAgIH1cbiAgICB9XG5cbiAgICBzZXRIb3ZlcmVkKGhvdmVySW5mbylcbiAgfVxuXG4gIGNvbnN0IG9uQ2xpY2sgPSBldmVudCA9PiB7XG4gICAgZXZlbnQuc3RvcFByb3BhZ2F0aW9uKClcbiAgICBjb25zdCBmZWF0dXJlID0gZXZlbnQuZmVhdHVyZXMgJiYgZXZlbnQuZmVhdHVyZXNbMF1cblxuICAgIGlmIChmZWF0dXJlKSB7XG4gICAgICBjb25zdCB7cHJvcGVydGllc30gPSBmZWF0dXJlXG4gICAgICBzZXRTZWxlY3RlZExvY2F0aW9uKHByb3BlcnRpZXMuY29kZSlcbiAgICB9IGVsc2Uge1xuICAgICAgc2V0U2VsZWN0ZWRMb2NhdGlvbihudWxsKVxuICAgIH1cblxuICAgIHNldEhvdmVyZWQobnVsbClcbiAgfVxuXG4gIHJldHVybiAoXG4gICAgPGRpdiBjbGFzc05hbWU9J21hcC1jb250YWluZXInPlxuICAgICAgPGRpdiBjbGFzc05hbWU9J2NvbnRyb2xzJz5cbiAgICAgICAgPGRpdiBjbGFzc05hbWU9J2NvbnRyb2wnPlxuICAgICAgICAgIHshaXNHb3V2ICYmIDxNYXBTZWxlY3RvciBtYXBJZHg9e3NlbGVjdGVkTWFwSWR4fSBzZWxlY3RNYXA9e3NldFNlbGVjdGVkTWFwSWR4fSAvPn1cbiAgICAgICAgPC9kaXY+XG5cbiAgICAgICAge2lzSWZyYW1lICYmIChcbiAgICAgICAgICA8ZGl2IGNsYXNzTmFtZT0nY29udHJvbCBtYXhpbWl6ZSc+XG4gICAgICAgICAgICA8YSBocmVmPSdodHRwczovL3ZlaWxsZS1jb3JvbmF2aXJ1cy5mci8nIHRhcmdldD0nX3RvcCc+PE1heGltaXplMiBzdHlsZT17e3ZlcnRpY2FsQWFsaWduOiAnbWlkZGxlJ319IC8+PC9hPlxuICAgICAgICAgIDwvZGl2PlxuICAgICAgICApfVxuICAgICAgPC9kaXY+XG5cbiAgICAgIDxSZWFjdE1hcEdMXG4gICAgICAgIFJldXNlTWFwc1xuICAgICAgICByZWY9e21hcFJlZn1cbiAgICAgICAgey4uLnZpZXdwb3J0fVxuICAgICAgICB3aWR0aD0nMTAwJSdcbiAgICAgICAgaGVpZ2h0PScxMDAlJ1xuICAgICAgICBtYXBTdHlsZT0naHR0cHM6Ly9vcGVubWFwdGlsZXMuZ2VvLmRhdGEuZ291di5mci9zdHlsZXMvb3NtLWJyaWdodC9zdHlsZS5qc29uJ1xuICAgICAgICB7Li4uc2V0dGluZ3N9XG4gICAgICAgIGludGVyYWN0aXZlTGF5ZXJJZHM9e21hcHNbc2VsZWN0ZWRNYXBJZHhdLmxheWVycy5tYXAobGF5ZXIgPT4gbGF5ZXIuaWQpfVxuICAgICAgICBvblZpZXdwb3J0Q2hhbmdlPXtzZXRWaWV3cG9ydH1cbiAgICAgICAgb25Ib3Zlcj17aXNNb2JpbGVEZXZpY2UgPyBudWxsIDogb25Ib3Zlcn1cbiAgICAgICAgb25DbGljaz17b25DbGlja31cbiAgICAgID5cblxuICAgICAgICA8U291cmNlXG4gICAgICAgICAgdHlwZT0nZ2VvanNvbidcbiAgICAgICAgICBpZD0nY2FzLWNvbmZpcm1lcydcbiAgICAgICAgICBhdHRyaWJ1dGlvbj0nRG9ubsOpZXMgTWluaXN0w6hyZSBkZXMgU29saWRhcml0w6lzIGV0IGRlIGxhIFNhbnTDqSdcbiAgICAgICAgICBkYXRhPXttYXBzW3NlbGVjdGVkTWFwSWR4XS5kYXRhfVxuICAgICAgICA+XG4gICAgICAgICAge21hcHNbc2VsZWN0ZWRNYXBJZHhdLmxheWVycy5tYXAobGF5ZXIgPT4gKFxuICAgICAgICAgICAgPExheWVyIGtleT17bGF5ZXIuaWR9IHsuLi5sYXllcn0gLz5cbiAgICAgICAgICApKX1cbiAgICAgICAgPC9Tb3VyY2U+XG5cbiAgICAgICAge2hvdmVyZWQgJiYgKFxuICAgICAgICAgIDxQb3B1cFxuICAgICAgICAgICAgbG9uZ2l0dWRlPXtob3ZlcmVkLmxvbmdpdHVkZX1cbiAgICAgICAgICAgIGxhdGl0dWRlPXtob3ZlcmVkLmxhdGl0dWRlfVxuICAgICAgICAgICAgY2xvc2VCdXR0b249e2ZhbHNlfVxuICAgICAgICAgICAgY2xvc2VPbkNsaWNrPXtmYWxzZX1cbiAgICAgICAgICAgIG9uQ2xvc2U9eygpID0+IHNldEhvdmVyZWQobnVsbCl9XG4gICAgICAgICAgICBhbmNob3I9J2JvdHRvbS1sZWZ0J1xuICAgICAgICAgID5cbiAgICAgICAgICAgIDxTdW1VcCBub209e2hvdmVyZWQuZmVhdHVyZS5wcm9wZXJ0aWVzLm5vbX0gLz5cbiAgICAgICAgICA8L1BvcHVwPlxuICAgICAgICApfVxuICAgICAgPC9SZWFjdE1hcEdMPlxuXG4gICAgICB7aXNNb2JpbGVEZXZpY2UgJiYgKFxuICAgICAgICA8ZGl2IGNsYXNzTmFtZT17YG1vYmlsZS1zdW11cCAke3NlbGVjdGVkTG9jYXRpb25SZXBvcnQgPyAnc2hvdycgOiAnaGlkZSd9YH0+XG4gICAgICAgICAge3NlbGVjdGVkTG9jYXRpb25SZXBvcnQgJiYgKFxuICAgICAgICAgICAgPFN0YXRpc3RpY3MgLz5cbiAgICAgICAgICApfVxuICAgICAgICA8L2Rpdj5cbiAgICAgICl9XG5cbiAgICAgIDxzdHlsZSBqc3g+e2BcbiAgICAgICAgLm1hcC1jb250YWluZXIge1xuICAgICAgICAgIHBvc2l0aW9uOiByZWxhdGl2ZTtcbiAgICAgICAgICB3aWR0aDogMTAwJTtcbiAgICAgICAgICBoZWlnaHQ6IDEwMCU7XG4gICAgICAgIH1cblxuICAgICAgICAuY29udHJvbHMge1xuICAgICAgICAgIHotaW5kZXg6IDE7XG4gICAgICAgICAgcG9zaXRpb246IGFic29sdXRlO1xuICAgICAgICAgIGRpc3BsYXk6IGZsZXg7XG4gICAgICAgICAganVzdGlmeS1jb250ZW50OiBzcGFjZS1iZXR3ZWVuO1xuICAgICAgICAgIGFsaWduLWl0ZW1zOiBlbmQ7XG4gICAgICAgICAgd2lkdGg6IDEwMCU7XG4gICAgICAgICAgcGFkZGluZzogMC41ZW07XG4gICAgICAgIH1cblxuICAgICAgICAuY29udHJvbCB7XG4gICAgICAgICAgYmFja2dyb3VuZC1jb2xvcjogIzAwMDAwMGFhO1xuICAgICAgICAgIGNvbG9yOiAjZmZmO1xuICAgICAgICAgIGJvcmRlci1yYWRpdXM6IDRweDtcbiAgICAgICAgICBtYXJnaW46IDA7XG4gICAgICAgIH1cblxuICAgICAgICAubWF4aW1pemUge1xuICAgICAgICAgIGRpc3BsYXk6IGZsZXg7XG4gICAgICAgICAgcmlnaHQ6IDA7XG4gICAgICAgICAgYm9yZGVyLXJhZGl1czogNHB4O1xuICAgICAgICAgIGJhY2tncm91bmQ6ICM1MzUxNGY7XG4gICAgICAgIH1cblxuICAgICAgICAubWF4aW1pemUgYSB7XG4gICAgICAgICAgY29sb3I6ICNmZmY7XG4gICAgICAgICAgcGFkZGluZzogMC40ZW0gMC40ZW0gMC4yZW0gMC40ZW07XG4gICAgICAgIH1cblxuICAgICAgICAubW9iaWxlLXN1bXVwIHtcbiAgICAgICAgICB6LWluZGV4OiAyO1xuICAgICAgICAgIHBvc2l0aW9uOiBhYnNvbHV0ZTtcbiAgICAgICAgICBib3R0b206IDA7XG4gICAgICAgICAgYmFja2dyb3VuZC1jb2xvcjogI2ZmZjtcbiAgICAgICAgICB3aWR0aDogMTAwJTtcbiAgICAgICAgICBtYXJnaW46IGF1dG87XG4gICAgICAgICAgcGFkZGluZzogMC41ZW07XG4gICAgICAgICAgdHJhbnNpdGlvbjogMC41cztcbiAgICAgICAgfVxuXG4gICAgICAgIC5tb2JpbGUtc3VtdXAuaGlkZSB7XG4gICAgICAgICAgaGVpZ2h0OiAwO1xuICAgICAgICAgIHBhZGRpbmc6IDA7XG4gICAgICAgIH1cblxuICAgICAgICAubW9iaWxlLXN1bXVwLnNob3cge1xuICAgICAgICAgIGhlaWdodDogMTAwJTtcbiAgICAgICAgfVxuICAgICAgYH08L3N0eWxlPlxuICAgIDwvZGl2PlxuICApXG59XG5cbmV4cG9ydCBkZWZhdWx0IE1hcFxuIl19 */\n/*@ sourceURL=/Users/jerome/opencovid19-fr/dashboard/components/react-map-gl/index.js */"));
 };
 
 /* harmony default export */ __webpack_exports__["default"] = (Map);
@@ -1369,7 +1595,7 @@ var Map = function Map() {
 /*!*******************************************!*\
   !*** ./components/react-map-gl/layers.js ***!
   \*******************************************/
-/*! exports provided: casConfirmesLayer, casConfirmesCountLayer, decesLayer, decesCountLayer */
+/*! exports provided: casConfirmesLayer, casConfirmesCountLayer, decesLayer, decesCountLayer, hospitalisesLayer, hospitalisesCountLayer, reanimationLayer, reanimationCountLayer */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -1378,6 +1604,10 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "casConfirmesCountLayer", function() { return casConfirmesCountLayer; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "decesLayer", function() { return decesLayer; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "decesCountLayer", function() { return decesCountLayer; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "hospitalisesLayer", function() { return hospitalisesLayer; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "hospitalisesCountLayer", function() { return hospitalisesCountLayer; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "reanimationLayer", function() { return reanimationLayer; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "reanimationCountLayer", function() { return reanimationCountLayer; });
 /* harmony import */ var _styles_colors__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../../styles/colors */ "./styles/colors.js");
 
 var casConfirmesLayer = {
@@ -1422,6 +1652,48 @@ var decesCountLayer = {
     'text-size': 16
   }
 };
+var hospitalisesLayer = {
+  id: 'hospitalises',
+  type: 'circle',
+  source: 'hospitalises',
+  filter: ['>', 'hospitalises', 0],
+  paint: {
+    'circle-opacity': 0.6,
+    'circle-color': _styles_colors__WEBPACK_IMPORTED_MODULE_0__["default"].darkGrey,
+    'circle-radius': ['interpolate', ['linear'], ['sqrt', ['number', ['get', 'hospitalises']]], 0, 10, 30, 80]
+  }
+};
+var hospitalisesCountLayer = {
+  id: 'hospitalises-count',
+  type: 'symbol',
+  source: 'hospitalises',
+  filter: ['>', 'hospitalises', 0],
+  layout: {
+    'text-field': '{hospitalises}',
+    'text-size': 16
+  }
+};
+var reanimationLayer = {
+  id: 'reanimation',
+  type: 'circle',
+  source: 'reanimation',
+  filter: ['>', 'reanimation', 0],
+  paint: {
+    'circle-opacity': 0.6,
+    'circle-color': _styles_colors__WEBPACK_IMPORTED_MODULE_0__["default"].darkerGrey,
+    'circle-radius': ['interpolate', ['linear'], ['sqrt', ['number', ['get', 'reanimation']]], 0, 10, 30, 80]
+  }
+};
+var reanimationCountLayer = {
+  id: 'reanimation-count',
+  type: 'symbol',
+  source: 'reanimation',
+  filter: ['>', 'reanimation', 0],
+  layout: {
+    'text-field': '{reanimation}',
+    'text-size': 16
+  }
+};
 
 /***/ }),
 
@@ -1440,69 +1712,43 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
 /* harmony import */ var prop_types__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! prop-types */ "./node_modules/prop-types/index.js");
 /* harmony import */ var prop_types__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(prop_types__WEBPACK_IMPORTED_MODULE_2__);
-/* harmony import */ var _charts_mixed_chart__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../charts/mixed-chart */ "./components/charts/mixed-chart.js");
 var _jsxFileName = "/Users/jerome/opencovid19-fr/dashboard/components/react-map-gl/sumup.js";
 
 var __jsx = react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement;
 
 
 
-
 var Sumup = function Sumup(_ref) {
-  var nom = _ref.nom,
-      casConfirmes = _ref.casConfirmes,
-      deces = _ref.deces,
-      data = _ref.data;
+  var nom = _ref.nom;
   return __jsx("div", {
-    className: "jsx-514667733" + " " + 'sumup-container',
+    className: "jsx-2707887134" + " " + 'sumup-container',
+    __source: {
+      fileName: _jsxFileName,
+      lineNumber: 6
+    },
+    __self: this
+  }, __jsx("div", {
+    className: "jsx-2707887134" + " " + 'title',
+    __source: {
+      fileName: _jsxFileName,
+      lineNumber: 7
+    },
+    __self: this
+  }, nom), __jsx("div", {
+    className: "jsx-2707887134" + " " + 'footer',
     __source: {
       fileName: _jsxFileName,
       lineNumber: 8
     },
     __self: this
-  }, __jsx("div", {
-    className: "jsx-514667733" + " " + 'title',
-    __source: {
-      fileName: _jsxFileName,
-      lineNumber: 9
-    },
+  }, "Cliquer pour plus d\u2019informations"), __jsx(styled_jsx_style__WEBPACK_IMPORTED_MODULE_0___default.a, {
+    id: "2707887134",
     __self: this
-  }, nom), __jsx("div", {
-    className: "jsx-514667733",
-    __source: {
-      fileName: _jsxFileName,
-      lineNumber: 10
-    },
-    __self: this
-  }, casConfirmes, " cas confirm\xE9s", deces && deces > 0 ? __jsx("span", {
-    className: "jsx-514667733",
-    __source: {
-      fileName: _jsxFileName,
-      lineNumber: 12
-    },
-    __self: this
-  }, " (dont ", deces, " d\xE9c\xE8s)") : null), __jsx(_charts_mixed_chart__WEBPACK_IMPORTED_MODULE_3__["default"], {
-    data: data,
-    height: 240,
-    __source: {
-      fileName: _jsxFileName,
-      lineNumber: 15
-    },
-    __self: this
-  }), __jsx(styled_jsx_style__WEBPACK_IMPORTED_MODULE_0___default.a, {
-    id: "514667733",
-    __self: this
-  }, ".sumup-container.jsx-514667733{font-size:larger;}.title.jsx-514667733{font-weight:bold;}\n/*# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbIi9Vc2Vycy9qZXJvbWUvb3BlbmNvdmlkMTktZnIvZGFzaGJvYXJkL2NvbXBvbmVudHMvcmVhY3QtbWFwLWdsL3N1bXVwLmpzIl0sIm5hbWVzIjpbXSwibWFwcGluZ3MiOiJBQWdCa0IsQUFHMEIsQUFJQSxpQkFIbkIsQUFJQSIsImZpbGUiOiIvVXNlcnMvamVyb21lL29wZW5jb3ZpZDE5LWZyL2Rhc2hib2FyZC9jb21wb25lbnRzL3JlYWN0LW1hcC1nbC9zdW11cC5qcyIsInNvdXJjZXNDb250ZW50IjpbImltcG9ydCBSZWFjdCBmcm9tICdyZWFjdCdcbmltcG9ydCBQcm9wVHlwZXMgZnJvbSAncHJvcC10eXBlcydcblxuaW1wb3J0IE1peGVkQ2hhcnQgZnJvbSAnLi4vY2hhcnRzL21peGVkLWNoYXJ0J1xuXG5jb25zdCBTdW11cCA9ICh7bm9tLCBjYXNDb25maXJtZXMsIGRlY2VzLCBkYXRhfSkgPT4ge1xuICByZXR1cm4gKFxuICAgIDxkaXYgY2xhc3NOYW1lPSdzdW11cC1jb250YWluZXInPlxuICAgICAgPGRpdiBjbGFzc05hbWU9J3RpdGxlJz57bm9tfTwvZGl2PlxuICAgICAgPGRpdj5cbiAgICAgICAge2Nhc0NvbmZpcm1lc30gY2FzIGNvbmZpcm3DqXNcbiAgICAgICAge2RlY2VzICYmIGRlY2VzID4gMCA/IDxzcGFuPiAoZG9udCB7ZGVjZXN9IGTDqWPDqHMpPC9zcGFuPiA6IG51bGx9XG4gICAgICA8L2Rpdj5cblxuICAgICAgPE1peGVkQ2hhcnQgZGF0YT17ZGF0YX0gaGVpZ2h0PXsyNDB9IC8+XG5cbiAgICAgIDxzdHlsZSBqc3g+e2BcbiAgICAgIC5zdW11cC1jb250YWluZXIge1xuICAgICAgICBmb250LXNpemU6IGxhcmdlcjtcbiAgICAgIH1cblxuICAgICAgLnRpdGxlIHtcbiAgICAgICAgZm9udC13ZWlnaHQ6IGJvbGQ7XG4gICAgICB9XG4gICAgYH08L3N0eWxlPlxuICAgIDwvZGl2PlxuICApXG59XG5cblN1bXVwLmRlZmF1bHRQcm9wcyA9IHtcbiAgZGVjZXM6IG51bGxcbn1cblxuU3VtdXAucHJvcFR5cGVzID0ge1xuICBub206IFByb3BUeXBlcy5zdHJpbmcuaXNSZXF1aXJlZCxcbiAgY2FzQ29uZmlybWVzOiBQcm9wVHlwZXMubnVtYmVyLmlzUmVxdWlyZWQsXG4gIGRlY2VzOiBQcm9wVHlwZXMubnVtYmVyLFxuICBkYXRhOiBQcm9wVHlwZXMuYXJyYXkuaXNSZXF1aXJlZFxufVxuXG5leHBvcnQgZGVmYXVsdCBTdW11cFxuIl19 */\n/*@ sourceURL=/Users/jerome/opencovid19-fr/dashboard/components/react-map-gl/sumup.js */"));
+  }, ".sumup-container.jsx-2707887134{font-size:larger;}.title.jsx-2707887134{font-weight:bold;}.footer.jsx-2707887134{font-size:small;font-style:italic;padding:0.2em 0;}\n/*# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbIi9Vc2Vycy9qZXJvbWUvb3BlbmNvdmlkMTktZnIvZGFzaGJvYXJkL2NvbXBvbmVudHMvcmVhY3QtbWFwLWdsL3N1bXVwLmpzIl0sIm5hbWVzIjpbXSwibWFwcGluZ3MiOiJBQVNrQixBQUcwQixBQUlBLEFBSUQsZ0JBQ0UsQ0FScEIsQUFJQSxpQkFLa0IsZ0JBQ2xCIiwiZmlsZSI6Ii9Vc2Vycy9qZXJvbWUvb3BlbmNvdmlkMTktZnIvZGFzaGJvYXJkL2NvbXBvbmVudHMvcmVhY3QtbWFwLWdsL3N1bXVwLmpzIiwic291cmNlc0NvbnRlbnQiOlsiaW1wb3J0IFJlYWN0IGZyb20gJ3JlYWN0J1xuaW1wb3J0IFByb3BUeXBlcyBmcm9tICdwcm9wLXR5cGVzJ1xuXG5jb25zdCBTdW11cCA9ICh7bm9tfSkgPT4ge1xuICByZXR1cm4gKFxuICAgIDxkaXYgY2xhc3NOYW1lPSdzdW11cC1jb250YWluZXInPlxuICAgICAgPGRpdiBjbGFzc05hbWU9J3RpdGxlJz57bm9tfTwvZGl2PlxuICAgICAgPGRpdiBjbGFzc05hbWU9J2Zvb3Rlcic+Q2xpcXVlciBwb3VyIHBsdXMgZOKAmWluZm9ybWF0aW9uczwvZGl2PlxuXG4gICAgICA8c3R5bGUganN4PntgXG4gICAgICAuc3VtdXAtY29udGFpbmVyIHtcbiAgICAgICAgZm9udC1zaXplOiBsYXJnZXI7XG4gICAgICB9XG5cbiAgICAgIC50aXRsZSB7XG4gICAgICAgIGZvbnQtd2VpZ2h0OiBib2xkO1xuICAgICAgfVxuXG4gICAgICAuZm9vdGVyIHtcbiAgICAgICAgZm9udC1zaXplOiBzbWFsbDtcbiAgICAgICAgZm9udC1zdHlsZTogaXRhbGljO1xuICAgICAgICBwYWRkaW5nOiAwLjJlbSAwO1xuICAgICAgfVxuICAgIGB9PC9zdHlsZT5cbiAgICA8L2Rpdj5cbiAgKVxufVxuXG5TdW11cC5wcm9wVHlwZXMgPSB7XG4gIG5vbTogUHJvcFR5cGVzLnN0cmluZy5pc1JlcXVpcmVkXG59XG5cbmV4cG9ydCBkZWZhdWx0IFN1bXVwXG4iXX0= */\n/*@ sourceURL=/Users/jerome/opencovid19-fr/dashboard/components/react-map-gl/sumup.js */"));
 };
 
-Sumup.defaultProps = {
-  deces: null
-};
 Sumup.propTypes = {
-  nom: prop_types__WEBPACK_IMPORTED_MODULE_2___default.a.string.isRequired,
-  casConfirmes: prop_types__WEBPACK_IMPORTED_MODULE_2___default.a.number.isRequired,
-  deces: prop_types__WEBPACK_IMPORTED_MODULE_2___default.a.number,
-  data: prop_types__WEBPACK_IMPORTED_MODULE_2___default.a.array.isRequired
+  nom: prop_types__WEBPACK_IMPORTED_MODULE_2___default.a.string.isRequired
 };
 /* harmony default export */ __webpack_exports__["default"] = (Sumup);
 
@@ -1548,6 +1794,183 @@ Scrollable.propTypes = {
   children: prop_types__WEBPACK_IMPORTED_MODULE_2___default.a.node.isRequired
 };
 /* harmony default export */ __webpack_exports__["default"] = (Scrollable);
+
+/***/ }),
+
+/***/ "./components/statistics.js":
+/*!**********************************!*\
+  !*** ./components/statistics.js ***!
+  \**********************************/
+/*! exports provided: default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony import */ var styled_jsx_style__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! styled-jsx/style */ "./node_modules/styled-jsx/style.js");
+/* harmony import */ var styled_jsx_style__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(styled_jsx_style__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react */ "./node_modules/react/index.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var react_feather__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! react-feather */ "./node_modules/react-feather/dist/index.js");
+/* harmony import */ var _styles_colors__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../styles/colors */ "./styles/colors.js");
+/* harmony import */ var _pages__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../pages */ "./pages/index.js");
+/* harmony import */ var _counters__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./counters */ "./components/counters.js");
+/* harmony import */ var _charts_mixed_chart__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./charts/mixed-chart */ "./components/charts/mixed-chart.js");
+/* harmony import */ var _charts_confirmes_chart__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ./charts/confirmes-chart */ "./components/charts/confirmes-chart.js");
+/* harmony import */ var _charts_deces_chart__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ./charts/deces-chart */ "./components/charts/deces-chart.js");
+/* harmony import */ var _charts_reanimation_chart__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ./charts/reanimation-chart */ "./components/charts/reanimation-chart.js");
+/* harmony import */ var _charts_hospitalises_chart__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! ./charts/hospitalises-chart */ "./components/charts/hospitalises-chart.js");
+var _jsxFileName = "/Users/jerome/opencovid19-fr/dashboard/components/statistics.js";
+
+var __jsx = react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement;
+
+
+
+
+
+
+
+
+
+
+var charts = {
+  mixed: {
+    name: 'Tout afficher',
+    chart: _charts_mixed_chart__WEBPACK_IMPORTED_MODULE_6__["default"]
+  },
+  confirmed: {
+    name: 'Cas confirmés',
+    chart: _charts_confirmes_chart__WEBPACK_IMPORTED_MODULE_7__["default"]
+  },
+  hospitalises: {
+    name: 'Hospitalisations',
+    chart: _charts_hospitalises_chart__WEBPACK_IMPORTED_MODULE_10__["default"]
+  },
+  reanimation: {
+    name: 'Réanimations',
+    chart: _charts_reanimation_chart__WEBPACK_IMPORTED_MODULE_9__["default"]
+  },
+  deces: {
+    name: 'Décès',
+    chart: _charts_deces_chart__WEBPACK_IMPORTED_MODULE_8__["default"]
+  }
+};
+
+var Statistics = function Statistics() {
+  var theme = Object(react__WEBPACK_IMPORTED_MODULE_1__["useContext"])(_pages__WEBPACK_IMPORTED_MODULE_4__["ThemeContext"]);
+
+  var _useContext = Object(react__WEBPACK_IMPORTED_MODULE_1__["useContext"])(_pages__WEBPACK_IMPORTED_MODULE_4__["AppContext"]),
+      date = _useContext.date,
+      franceReport = _useContext.franceReport,
+      selectedLocationReport = _useContext.selectedLocationReport,
+      setSelectedLocation = _useContext.setSelectedLocation,
+      isMobileDevice = _useContext.isMobileDevice;
+
+  var report = selectedLocationReport || franceReport;
+
+  var _useState = Object(react__WEBPACK_IMPORTED_MODULE_1__["useState"])('mixed'),
+      selectedChart = _useState[0],
+      setSelectedChart = _useState[1];
+
+  var Chart = charts[selectedChart].chart;
+  return __jsx(react__WEBPACK_IMPORTED_MODULE_1___default.a.Fragment, null, __jsx("div", {
+    className: styled_jsx_style__WEBPACK_IMPORTED_MODULE_0___default.a.dynamic([["165575768", [_styles_colors__WEBPACK_IMPORTED_MODULE_3__["default"].lighterGrey, _styles_colors__WEBPACK_IMPORTED_MODULE_3__["default"].lightGrey, theme.alt, theme.secondary, theme.primary]]]) + " " + 'header',
+    __source: {
+      fileName: _jsxFileName,
+      lineNumber: 49
+    },
+    __self: this
+  }, selectedLocationReport && (isMobileDevice ? __jsx("div", {
+    onClick: function onClick() {
+      return setSelectedLocation(null);
+    },
+    className: styled_jsx_style__WEBPACK_IMPORTED_MODULE_0___default.a.dynamic([["165575768", [_styles_colors__WEBPACK_IMPORTED_MODULE_3__["default"].lighterGrey, _styles_colors__WEBPACK_IMPORTED_MODULE_3__["default"].lightGrey, theme.alt, theme.secondary, theme.primary]]]) + " " + 'close',
+    __source: {
+      fileName: _jsxFileName,
+      lineNumber: 52
+    },
+    __self: this
+  }, __jsx(react_feather__WEBPACK_IMPORTED_MODULE_2__["X"], {
+    __source: {
+      fileName: _jsxFileName,
+      lineNumber: 52
+    },
+    __self: this
+  })) : __jsx("div", {
+    onClick: function onClick() {
+      return setSelectedLocation(null);
+    },
+    className: styled_jsx_style__WEBPACK_IMPORTED_MODULE_0___default.a.dynamic([["165575768", [_styles_colors__WEBPACK_IMPORTED_MODULE_3__["default"].lighterGrey, _styles_colors__WEBPACK_IMPORTED_MODULE_3__["default"].lightGrey, theme.alt, theme.secondary, theme.primary]]]) + " " + 'back',
+    __source: {
+      fileName: _jsxFileName,
+      lineNumber: 54
+    },
+    __self: this
+  }, __jsx(react_feather__WEBPACK_IMPORTED_MODULE_2__["BarChart2"], {
+    __source: {
+      fileName: _jsxFileName,
+      lineNumber: 54
+    },
+    __self: this
+  }), " ", __jsx("span", {
+    className: styled_jsx_style__WEBPACK_IMPORTED_MODULE_0___default.a.dynamic([["165575768", [_styles_colors__WEBPACK_IMPORTED_MODULE_3__["default"].lighterGrey, _styles_colors__WEBPACK_IMPORTED_MODULE_3__["default"].lightGrey, theme.alt, theme.secondary, theme.primary]]]),
+    __source: {
+      fileName: _jsxFileName,
+      lineNumber: 54
+    },
+    __self: this
+  }, "France"))), __jsx("h2", {
+    className: styled_jsx_style__WEBPACK_IMPORTED_MODULE_0___default.a.dynamic([["165575768", [_styles_colors__WEBPACK_IMPORTED_MODULE_3__["default"].lighterGrey, _styles_colors__WEBPACK_IMPORTED_MODULE_3__["default"].lightGrey, theme.alt, theme.secondary, theme.primary]]]),
+    __source: {
+      fileName: _jsxFileName,
+      lineNumber: 57
+    },
+    __self: this
+  }, selectedLocationReport ? selectedLocationReport.nom : 'France')), __jsx(_counters__WEBPACK_IMPORTED_MODULE_5__["default"], {
+    report: report,
+    __source: {
+      fileName: _jsxFileName,
+      lineNumber: 60
+    },
+    __self: this
+  }), report && report.history && __jsx(react__WEBPACK_IMPORTED_MODULE_1___default.a.Fragment, null, __jsx(Chart, {
+    data: report.history.filter(function (r) {
+      return date >= r.date;
+    }),
+    height: isMobileDevice ? 260 : 280,
+    className: styled_jsx_style__WEBPACK_IMPORTED_MODULE_0___default.a.dynamic([["165575768", [_styles_colors__WEBPACK_IMPORTED_MODULE_3__["default"].lighterGrey, _styles_colors__WEBPACK_IMPORTED_MODULE_3__["default"].lightGrey, theme.alt, theme.secondary, theme.primary]]]),
+    __source: {
+      fileName: _jsxFileName,
+      lineNumber: 64
+    },
+    __self: this
+  }), __jsx("div", {
+    className: styled_jsx_style__WEBPACK_IMPORTED_MODULE_0___default.a.dynamic([["165575768", [_styles_colors__WEBPACK_IMPORTED_MODULE_3__["default"].lighterGrey, _styles_colors__WEBPACK_IMPORTED_MODULE_3__["default"].lightGrey, theme.alt, theme.secondary, theme.primary]]]) + " " + 'charts-list',
+    __source: {
+      fileName: _jsxFileName,
+      lineNumber: 65
+    },
+    __self: this
+  }, Object.keys(charts).map(function (chart) {
+    return __jsx("div", {
+      key: chart,
+      onClick: function onClick() {
+        return setSelectedChart(chart);
+      },
+      className: styled_jsx_style__WEBPACK_IMPORTED_MODULE_0___default.a.dynamic([["165575768", [_styles_colors__WEBPACK_IMPORTED_MODULE_3__["default"].lighterGrey, _styles_colors__WEBPACK_IMPORTED_MODULE_3__["default"].lightGrey, theme.alt, theme.secondary, theme.primary]]]) + " " + "chart-name ".concat(chart === selectedChart ? 'selected' : ''),
+      __source: {
+        fileName: _jsxFileName,
+        lineNumber: 67
+      },
+      __self: this
+    }, charts[chart].name);
+  }))), __jsx(styled_jsx_style__WEBPACK_IMPORTED_MODULE_0___default.a, {
+    id: "165575768",
+    dynamic: [_styles_colors__WEBPACK_IMPORTED_MODULE_3__["default"].lighterGrey, _styles_colors__WEBPACK_IMPORTED_MODULE_3__["default"].lightGrey, theme.alt, theme.secondary, theme.primary],
+    __self: this
+  }, ".header.__jsx-style-dynamic-selector{text-align:center;position:-webkit-sticky;position:sticky;top:0;background-color:white;margin:0 -0.5em;padding:1px;}.back.__jsx-style-dynamic-selector{display:-webkit-box;display:-webkit-flex;display:-ms-flexbox;display:flex;-webkit-align-items:center;-webkit-box-align:center;-ms-flex-align:center;align-items:center;-webkit-box-pack:center;-webkit-justify-content:center;-ms-flex-pack:center;justify-content:center;width:100%;background:".concat(_styles_colors__WEBPACK_IMPORTED_MODULE_3__["default"].lighterGrey, ";padding:0.5em;font-size:larger;}.close.__jsx-style-dynamic-selector{position:absolute;top:0;right:0.5em;}.back.__jsx-style-dynamic-selector span.__jsx-style-dynamic-selector{margin:0 0.5em;}.back.__jsx-style-dynamic-selector:hover{cursor:pointer;background:").concat(_styles_colors__WEBPACK_IMPORTED_MODULE_3__["default"].lightGrey, ";}.charts-list.__jsx-style-dynamic-selector{display:grid;grid-template-columns:repeat(auto-fit,minmax(100px,1fr));grid-gap:0.2em;margin:0.5em;}.chart-name.__jsx-style-dynamic-selector{text-align:center;background-color:").concat(theme.alt, ";color:#fff;border-radius:4px;margin:.2em 0;padding:0.2em 0.4em;}.chart-name.__jsx-style-dynamic-selector:hover{cursor:pointer;background-color:").concat(theme.secondary, ";}.chart-name.selected.__jsx-style-dynamic-selector{background-color:").concat(theme.primary, ";}\n/*# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbIi9Vc2Vycy9qZXJvbWUvb3BlbmNvdmlkMTktZnIvZGFzaGJvYXJkL2NvbXBvbmVudHMvc3RhdGlzdGljcy5qcyJdLCJuYW1lcyI6W10sIm1hcHBpbmdzIjoiQUE4RWtCLEFBRzZCLEFBU0wsQUFVSyxBQU1ILEFBSUEsQUFLRixBQU9LLEFBU0gsQUFLK0IsYUFwQmEsRUFUN0QsQUFJMEMsQUFxQk0sR0FsRDlCLEFBbUJWLEFBc0J3QyxNQXJCbEMsWUFDZCxVQWtDQSxTQXpCQSxHQTdCUSxHQWtEUixHQWpEeUIsQUF3Q1osTUFQSSxJQTFCSSxDQWtDRCxVQVBMLEVBakNHLE1BeUNGLEtBUGhCLEtBakNjLElBeUNRLFFBeEN0QixZQXlDQSx3Q0FwQ3lCLG1HQUNaLFdBQzZCLHdDQUMxQixjQUNHLGlCQUNuQiIsImZpbGUiOiIvVXNlcnMvamVyb21lL29wZW5jb3ZpZDE5LWZyL2Rhc2hib2FyZC9jb21wb25lbnRzL3N0YXRpc3RpY3MuanMiLCJzb3VyY2VzQ29udGVudCI6WyJpbXBvcnQgUmVhY3QsIHt1c2VDb250ZXh0LCB1c2VTdGF0ZX0gZnJvbSAncmVhY3QnXG5pbXBvcnQge1gsIEJhckNoYXJ0Mn0gZnJvbSAncmVhY3QtZmVhdGhlcidcblxuaW1wb3J0IGNvbG9ycyBmcm9tICcuLi9zdHlsZXMvY29sb3JzJ1xuXG5pbXBvcnQge0FwcENvbnRleHQsIFRoZW1lQ29udGV4dH0gZnJvbSAnLi4vcGFnZXMnXG5cbmltcG9ydCBDb3VudGVycyBmcm9tICcuL2NvdW50ZXJzJ1xuaW1wb3J0IE1peGVkQ2hhcnQgZnJvbSAnLi9jaGFydHMvbWl4ZWQtY2hhcnQnXG5pbXBvcnQgQ29uZmlybWVzQ2hhcnQgZnJvbSAnLi9jaGFydHMvY29uZmlybWVzLWNoYXJ0J1xuaW1wb3J0IERlY2VzQ2hhcnQgZnJvbSAnLi9jaGFydHMvZGVjZXMtY2hhcnQnXG5pbXBvcnQgUmVhbmltYXRpb25DaGFydCBmcm9tICcuL2NoYXJ0cy9yZWFuaW1hdGlvbi1jaGFydCdcbmltcG9ydCBIb3NwaXRhbGlzZXNDaGFydCBmcm9tICcuL2NoYXJ0cy9ob3NwaXRhbGlzZXMtY2hhcnQnXG5cbmNvbnN0IGNoYXJ0cyA9IHtcbiAgbWl4ZWQ6IHtcbiAgICBuYW1lOiAnVG91dCBhZmZpY2hlcicsXG4gICAgY2hhcnQ6IE1peGVkQ2hhcnRcbiAgfSxcbiAgY29uZmlybWVkOiB7XG4gICAgbmFtZTogJ0NhcyBjb25maXJtw6lzJyxcbiAgICBjaGFydDogQ29uZmlybWVzQ2hhcnRcbiAgfSxcbiAgaG9zcGl0YWxpc2VzOiB7XG4gICAgbmFtZTogJ0hvc3BpdGFsaXNhdGlvbnMnLFxuICAgIGNoYXJ0OiBIb3NwaXRhbGlzZXNDaGFydFxuICB9LFxuICByZWFuaW1hdGlvbjoge1xuICAgIG5hbWU6ICdSw6lhbmltYXRpb25zJyxcbiAgICBjaGFydDogUmVhbmltYXRpb25DaGFydFxuICB9LFxuICBkZWNlczoge1xuICAgIG5hbWU6ICdEw6ljw6hzJyxcbiAgICBjaGFydDogRGVjZXNDaGFydFxuICB9XG59XG5cbmNvbnN0IFN0YXRpc3RpY3MgPSAoKSA9PiB7XG4gIGNvbnN0IHRoZW1lID0gdXNlQ29udGV4dChUaGVtZUNvbnRleHQpXG4gIGNvbnN0IHtkYXRlLCBmcmFuY2VSZXBvcnQsIHNlbGVjdGVkTG9jYXRpb25SZXBvcnQsIHNldFNlbGVjdGVkTG9jYXRpb24sIGlzTW9iaWxlRGV2aWNlfSA9IHVzZUNvbnRleHQoQXBwQ29udGV4dClcblxuICBjb25zdCByZXBvcnQgPSBzZWxlY3RlZExvY2F0aW9uUmVwb3J0IHx8IGZyYW5jZVJlcG9ydFxuXG4gIGNvbnN0IFtzZWxlY3RlZENoYXJ0LCBzZXRTZWxlY3RlZENoYXJ0XSA9IHVzZVN0YXRlKCdtaXhlZCcpXG4gIGNvbnN0IENoYXJ0ID0gY2hhcnRzW3NlbGVjdGVkQ2hhcnRdLmNoYXJ0XG5cbiAgcmV0dXJuIChcbiAgICA8PlxuICAgICAgPGRpdiBjbGFzc05hbWU9J2hlYWRlcic+XG4gICAgICAgIHtzZWxlY3RlZExvY2F0aW9uUmVwb3J0ICYmIChcbiAgICAgICAgICBpc01vYmlsZURldmljZSA/IChcbiAgICAgICAgICAgIDxkaXYgY2xhc3NOYW1lPSdjbG9zZScgb25DbGljaz17KCkgPT4gc2V0U2VsZWN0ZWRMb2NhdGlvbihudWxsKX0+PFggLz48L2Rpdj5cbiAgICAgICAgICApIDogKFxuICAgICAgICAgICAgPGRpdiBjbGFzc05hbWU9J2JhY2snIG9uQ2xpY2s9eygpID0+IHNldFNlbGVjdGVkTG9jYXRpb24obnVsbCl9PjxCYXJDaGFydDIgLz4gPHNwYW4+RnJhbmNlPC9zcGFuPjwvZGl2PlxuICAgICAgICAgIClcbiAgICAgICAgKX1cbiAgICAgICAgPGgyPntzZWxlY3RlZExvY2F0aW9uUmVwb3J0ID8gc2VsZWN0ZWRMb2NhdGlvblJlcG9ydC5ub20gOiAnRnJhbmNlJ308L2gyPlxuICAgICAgPC9kaXY+XG5cbiAgICAgIDxDb3VudGVycyByZXBvcnQ9e3JlcG9ydH0gLz5cblxuICAgICAge3JlcG9ydCAmJiByZXBvcnQuaGlzdG9yeSAmJiAoXG4gICAgICAgIDw+XG4gICAgICAgICAgPENoYXJ0IGRhdGE9e3JlcG9ydC5oaXN0b3J5LmZpbHRlcihyID0+IGRhdGUgPj0gci5kYXRlKX0gaGVpZ2h0PXtpc01vYmlsZURldmljZSA/IDI2MCA6IDI4MH0gLz5cbiAgICAgICAgICA8ZGl2IGNsYXNzTmFtZT0nY2hhcnRzLWxpc3QnPlxuICAgICAgICAgICAge09iamVjdC5rZXlzKGNoYXJ0cykubWFwKGNoYXJ0ID0+IChcbiAgICAgICAgICAgICAgPGRpdlxuICAgICAgICAgICAgICAgIGtleT17Y2hhcnR9XG4gICAgICAgICAgICAgICAgY2xhc3NOYW1lPXtgY2hhcnQtbmFtZSAke2NoYXJ0ID09PSBzZWxlY3RlZENoYXJ0ID8gJ3NlbGVjdGVkJyA6ICcnfWB9XG4gICAgICAgICAgICAgICAgb25DbGljaz17KCkgPT4gc2V0U2VsZWN0ZWRDaGFydChjaGFydCl9XG4gICAgICAgICAgICAgID5cbiAgICAgICAgICAgICAgICB7Y2hhcnRzW2NoYXJ0XS5uYW1lfVxuICAgICAgICAgICAgICA8L2Rpdj5cbiAgICAgICAgICAgICkpfVxuICAgICAgICAgIDwvZGl2PlxuICAgICAgICA8Lz5cbiAgICAgICl9XG5cbiAgICAgIDxzdHlsZSBqc3g+e2BcbiAgICAgICAgLmhlYWRlciB7XG4gICAgICAgICAgdGV4dC1hbGlnbjogY2VudGVyO1xuICAgICAgICAgIHBvc2l0aW9uOiBzdGlja3k7XG4gICAgICAgICAgdG9wOiAwO1xuICAgICAgICAgIGJhY2tncm91bmQtY29sb3I6IHdoaXRlO1xuICAgICAgICAgIG1hcmdpbjogMCAtMC41ZW07XG4gICAgICAgICAgcGFkZGluZzogMXB4O1xuICAgICAgICB9XG5cbiAgICAgICAgLmJhY2sge1xuICAgICAgICAgIGRpc3BsYXk6IGZsZXg7XG4gICAgICAgICAgYWxpZ24taXRlbXM6IGNlbnRlcjtcbiAgICAgICAgICBqdXN0aWZ5LWNvbnRlbnQ6IGNlbnRlcjtcbiAgICAgICAgICB3aWR0aDogMTAwJTtcbiAgICAgICAgICBiYWNrZ3JvdW5kOiAke2NvbG9ycy5saWdodGVyR3JleX07XG4gICAgICAgICAgcGFkZGluZzogMC41ZW07XG4gICAgICAgICAgZm9udC1zaXplOiBsYXJnZXI7XG4gICAgICAgIH1cblxuICAgICAgICAuY2xvc2Uge1xuICAgICAgICAgIHBvc2l0aW9uOiBhYnNvbHV0ZTtcbiAgICAgICAgICB0b3A6IDA7XG4gICAgICAgICAgcmlnaHQ6IDAuNWVtO1xuICAgICAgICB9XG5cbiAgICAgICAgLmJhY2sgc3BhbiB7XG4gICAgICAgICAgbWFyZ2luOiAwIDAuNWVtO1xuICAgICAgICB9XG5cbiAgICAgICAgLmJhY2s6aG92ZXIge1xuICAgICAgICAgIGN1cnNvcjogcG9pbnRlcjtcbiAgICAgICAgICBiYWNrZ3JvdW5kOiAke2NvbG9ycy5saWdodEdyZXl9O1xuICAgICAgICB9XG5cbiAgICAgICAgLmNoYXJ0cy1saXN0IHtcbiAgICAgICAgICBkaXNwbGF5OiBncmlkO1xuICAgICAgICAgIGdyaWQtdGVtcGxhdGUtY29sdW1uczogcmVwZWF0KGF1dG8tZml0LCBtaW5tYXgoMTAwcHgsIDFmcikpO1xuICAgICAgICAgIGdyaWQtZ2FwOiAwLjJlbTtcbiAgICAgICAgICBtYXJnaW46IDAuNWVtO1xuICAgICAgICB9XG5cbiAgICAgICAgLmNoYXJ0LW5hbWUge1xuICAgICAgICAgIHRleHQtYWxpZ246IGNlbnRlcjtcbiAgICAgICAgICBiYWNrZ3JvdW5kLWNvbG9yOiAke3RoZW1lLmFsdH07XG4gICAgICAgICAgY29sb3I6ICNmZmY7XG4gICAgICAgICAgYm9yZGVyLXJhZGl1czogNHB4O1xuICAgICAgICAgIG1hcmdpbjogLjJlbSAwO1xuICAgICAgICAgIHBhZGRpbmc6IDAuMmVtIDAuNGVtO1xuICAgICAgICB9XG5cbiAgICAgICAgLmNoYXJ0LW5hbWU6aG92ZXIge1xuICAgICAgICAgIGN1cnNvcjogcG9pbnRlcjtcbiAgICAgICAgICBiYWNrZ3JvdW5kLWNvbG9yOiAke3RoZW1lLnNlY29uZGFyeX07XG4gICAgICAgIH1cblxuICAgICAgICAuY2hhcnQtbmFtZS5zZWxlY3RlZCB7XG4gICAgICAgICAgYmFja2dyb3VuZC1jb2xvcjogJHt0aGVtZS5wcmltYXJ5fTtcbiAgICAgICAgfVxuICAgICAgICBgfTwvc3R5bGU+XG4gICAgPC8+XG4gIClcbn1cblxuZXhwb3J0IGRlZmF1bHQgU3RhdGlzdGljc1xuIl19 */\n/*@ sourceURL=/Users/jerome/opencovid19-fr/dashboard/components/statistics.js */")));
+};
+
+/* harmony default export */ __webpack_exports__["default"] = (Statistics);
 
 /***/ }),
 
@@ -1670,7 +2093,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _components_date_nav__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ../components/date-nav */ "./components/date-nav.js");
 /* harmony import */ var _components_scrollable__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ../components/scrollable */ "./components/scrollable.js");
 /* harmony import */ var _components_react_map_gl__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ../components/react-map-gl */ "./components/react-map-gl/index.js");
-/* harmony import */ var _components_national_statistics__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ../components/national-statistics */ "./components/national-statistics.js");
+/* harmony import */ var _components_statistics__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ../components/statistics */ "./components/statistics.js");
 /* harmony import */ var _components_informations__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! ../components/informations */ "./components/informations.js");
 /* harmony import */ var _components_footer__WEBPACK_IMPORTED_MODULE_11__ = __webpack_require__(/*! ../components/footer */ "./components/footer.js");
 var _jsxFileName = "/Users/jerome/opencovid19-fr/dashboard/layouts/mobile.js";
@@ -1698,7 +2121,7 @@ var VIEWS = {
     });
   },
   stats: function stats() {
-    return __jsx(_components_national_statistics__WEBPACK_IMPORTED_MODULE_9__["default"], {
+    return __jsx(_components_statistics__WEBPACK_IMPORTED_MODULE_9__["default"], {
       __source: {
         fileName: _jsxFileName,
         lineNumber: 18
@@ -1723,91 +2146,98 @@ var MobilePage = function MobilePage() {
       setSelectedView = _useState[1];
 
   var app = Object(react__WEBPACK_IMPORTED_MODULE_1__["useContext"])(_pages__WEBPACK_IMPORTED_MODULE_5__["AppContext"]);
+
+  var handleClick = function handleClick(view) {
+    app.setSelectedLocation(null);
+    setSelectedView(view);
+  };
+
   return __jsx("div", {
     className: styled_jsx_style__WEBPACK_IMPORTED_MODULE_0___default.a.dynamic([["3291159651", [_styles_colors__WEBPACK_IMPORTED_MODULE_3__["default"].blue, _styles_theme__WEBPACK_IMPORTED_MODULE_4__["default"].mobileDisplay]]]) + " " + 'mobile-page-container',
     __source: {
       fileName: _jsxFileName,
-      lineNumber: 28
+      lineNumber: 33
     },
     __self: this
   }, __jsx(_components_date_nav__WEBPACK_IMPORTED_MODULE_6__["default"], {
+    disabled: selectedView === 'informations',
     __source: {
       fileName: _jsxFileName,
-      lineNumber: 29
+      lineNumber: 34
     },
     __self: this
   }), __jsx(_components_scrollable__WEBPACK_IMPORTED_MODULE_7__["default"], {
     __source: {
       fileName: _jsxFileName,
-      lineNumber: 30
+      lineNumber: 35
     },
     __self: this
   }, VIEWS[selectedView](app)), __jsx("div", {
     className: styled_jsx_style__WEBPACK_IMPORTED_MODULE_0___default.a.dynamic([["3291159651", [_styles_colors__WEBPACK_IMPORTED_MODULE_3__["default"].blue, _styles_theme__WEBPACK_IMPORTED_MODULE_4__["default"].mobileDisplay]]]) + " " + 'view-selector',
     __source: {
       fileName: _jsxFileName,
-      lineNumber: 34
+      lineNumber: 39
     },
     __self: this
   }, __jsx("div", {
     onClick: function onClick() {
-      return setSelectedView('informations');
+      return handleClick('informations');
     },
     className: styled_jsx_style__WEBPACK_IMPORTED_MODULE_0___default.a.dynamic([["3291159651", [_styles_colors__WEBPACK_IMPORTED_MODULE_3__["default"].blue, _styles_theme__WEBPACK_IMPORTED_MODULE_4__["default"].mobileDisplay]]]) + " " + "".concat(selectedView === 'informations' ? 'selected' : ''),
     __source: {
       fileName: _jsxFileName,
-      lineNumber: 35
+      lineNumber: 40
     },
     __self: this
   }, __jsx(react_feather__WEBPACK_IMPORTED_MODULE_2__["FileText"], {
     __source: {
       fileName: _jsxFileName,
-      lineNumber: 36
+      lineNumber: 41
     },
     __self: this
   })), __jsx("div", {
     onClick: function onClick() {
-      return setSelectedView('map');
+      return handleClick('map');
     },
     className: styled_jsx_style__WEBPACK_IMPORTED_MODULE_0___default.a.dynamic([["3291159651", [_styles_colors__WEBPACK_IMPORTED_MODULE_3__["default"].blue, _styles_theme__WEBPACK_IMPORTED_MODULE_4__["default"].mobileDisplay]]]) + " " + "".concat(selectedView === 'map' ? 'selected' : ''),
     __source: {
       fileName: _jsxFileName,
-      lineNumber: 38
+      lineNumber: 43
     },
     __self: this
   }, __jsx(react_feather__WEBPACK_IMPORTED_MODULE_2__["Map"], {
     __source: {
       fileName: _jsxFileName,
-      lineNumber: 39
+      lineNumber: 44
     },
     __self: this
   })), __jsx("div", {
     onClick: function onClick() {
-      return setSelectedView('stats');
+      return handleClick('stats');
     },
     className: styled_jsx_style__WEBPACK_IMPORTED_MODULE_0___default.a.dynamic([["3291159651", [_styles_colors__WEBPACK_IMPORTED_MODULE_3__["default"].blue, _styles_theme__WEBPACK_IMPORTED_MODULE_4__["default"].mobileDisplay]]]) + " " + "".concat(selectedView === 'stats' ? 'selected' : ''),
     __source: {
       fileName: _jsxFileName,
-      lineNumber: 41
-    },
-    __self: this
-  }, __jsx(react_feather__WEBPACK_IMPORTED_MODULE_2__["BarChart"], {
-    __source: {
-      fileName: _jsxFileName,
-      lineNumber: 42
-    },
-    __self: this
-  }))), __jsx(_components_footer__WEBPACK_IMPORTED_MODULE_11__["default"], {
-    __source: {
-      fileName: _jsxFileName,
       lineNumber: 46
+    },
+    __self: this
+  }, __jsx(react_feather__WEBPACK_IMPORTED_MODULE_2__["BarChart2"], {
+    __source: {
+      fileName: _jsxFileName,
+      lineNumber: 47
+    },
+    __self: this
+  }))), !app.isIframe && __jsx(_components_footer__WEBPACK_IMPORTED_MODULE_11__["default"], {
+    __source: {
+      fileName: _jsxFileName,
+      lineNumber: 51
     },
     __self: this
   }), __jsx(styled_jsx_style__WEBPACK_IMPORTED_MODULE_0___default.a, {
     id: "3291159651",
     dynamic: [_styles_colors__WEBPACK_IMPORTED_MODULE_3__["default"].blue, _styles_theme__WEBPACK_IMPORTED_MODULE_4__["default"].mobileDisplay],
     __self: this
-  }, ".mobile-page-container.__jsx-style-dynamic-selector{display:-webkit-box;display:-webkit-flex;display:-ms-flexbox;display:flex;-webkit-flex-direction:column;-ms-flex-direction:column;flex-direction:column;-webkit-flex:1;-ms-flex:1;flex:1;}.view-selector.__jsx-style-dynamic-selector{display:none;}.view-selector.__jsx-style-dynamic-selector>div.__jsx-style-dynamic-selector{padding:0.5em;margin:auto;}.view-selector.__jsx-style-dynamic-selector>div.selected.__jsx-style-dynamic-selector{border-top:2px solid ".concat(_styles_colors__WEBPACK_IMPORTED_MODULE_3__["default"].blue, ";}@media (max-width:").concat(_styles_theme__WEBPACK_IMPORTED_MODULE_4__["default"].mobileDisplay, "){.view-selector.__jsx-style-dynamic-selector{display:grid;grid-template-columns:1fr 1fr 1fr;-webkit-box-pack:center;-webkit-justify-content:center;-ms-flex-pack:center;justify-content:center;-webkit-align-items:center;-webkit-box-align:center;-ms-flex-align:center;align-items:center;background-color:#fff;}}\n/*# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbIi9Vc2Vycy9qZXJvbWUvb3BlbmNvdmlkMTktZnIvZGFzaGJvYXJkL2xheW91dHMvbW9iaWxlLmpzIl0sIm5hbWVzIjpbXSwibWFwcGluZ3MiOiJBQStDa0IsQUFHd0IsQUFNQSxBQUlDLEFBS29DLEFBS25DLGFBYmpCLEFBY3NDLENBVnhCLFlBQ2QscUJBVTJCLEdBTjNCLHdCQWZ3Qix3RUFzQkQsTUFyQmQsaUNBQ1Qsc0RBcUIwQixzQkFDeEIiLCJmaWxlIjoiL1VzZXJzL2plcm9tZS9vcGVuY292aWQxOS1mci9kYXNoYm9hcmQvbGF5b3V0cy9tb2JpbGUuanMiLCJzb3VyY2VzQ29udGVudCI6WyJpbXBvcnQgUmVhY3QsIHt1c2VTdGF0ZSwgdXNlQ29udGV4dH0gZnJvbSAncmVhY3QnXG5pbXBvcnQge0ZpbGVUZXh0LCBNYXAsIEJhckNoYXJ0fSBmcm9tICdyZWFjdC1mZWF0aGVyJ1xuXG5pbXBvcnQgY29sb3JzIGZyb20gJy4uL3N0eWxlcy9jb2xvcnMnXG5pbXBvcnQgdGhlbWUgZnJvbSAnLi4vc3R5bGVzL3RoZW1lJ1xuXG5pbXBvcnQge0FwcENvbnRleHR9IGZyb20gJy4uL3BhZ2VzJ1xuXG5pbXBvcnQgRGF0ZU5hdiBmcm9tICcuLi9jb21wb25lbnRzL2RhdGUtbmF2J1xuaW1wb3J0IFNjcm9sbGFibGUgZnJvbSAnLi4vY29tcG9uZW50cy9zY3JvbGxhYmxlJ1xuaW1wb3J0IFJlYWN0TWFwR2wgZnJvbSAnLi4vY29tcG9uZW50cy9yZWFjdC1tYXAtZ2wnXG5pbXBvcnQgTmF0aW9uYWxTdGF0aXN0aWNzIGZyb20gJy4uL2NvbXBvbmVudHMvbmF0aW9uYWwtc3RhdGlzdGljcydcbmltcG9ydCBJbmZvcm1hdGlvbnMgZnJvbSAnLi4vY29tcG9uZW50cy9pbmZvcm1hdGlvbnMnXG5pbXBvcnQgRm9vdGVyIGZyb20gJy4uL2NvbXBvbmVudHMvZm9vdGVyJ1xuXG5jb25zdCBWSUVXUyA9IHtcbiAgbWFwOiAoKSA9PiA8UmVhY3RNYXBHbCAvPixcbiAgc3RhdHM6ICgpID0+IDxOYXRpb25hbFN0YXRpc3RpY3MgLz4sXG4gIGluZm9ybWF0aW9uczogKCkgPT4gPEluZm9ybWF0aW9ucyAvPlxufVxuXG5jb25zdCBNb2JpbGVQYWdlID0gKCkgPT4ge1xuICBjb25zdCBbc2VsZWN0ZWRWaWV3LCBzZXRTZWxlY3RlZFZpZXddID0gdXNlU3RhdGUoJ21hcCcpXG5cbiAgY29uc3QgYXBwID0gdXNlQ29udGV4dChBcHBDb250ZXh0KVxuXG4gIHJldHVybiAoXG4gICAgPGRpdiBjbGFzc05hbWU9J21vYmlsZS1wYWdlLWNvbnRhaW5lcic+XG4gICAgICA8RGF0ZU5hdiAvPlxuICAgICAgPFNjcm9sbGFibGU+XG4gICAgICAgIHtWSUVXU1tzZWxlY3RlZFZpZXddKGFwcCl9XG4gICAgICA8L1Njcm9sbGFibGU+XG5cbiAgICAgIDxkaXYgY2xhc3NOYW1lPSd2aWV3LXNlbGVjdG9yJz5cbiAgICAgICAgPGRpdiBjbGFzc05hbWU9e2Ake3NlbGVjdGVkVmlldyA9PT0gJ2luZm9ybWF0aW9ucycgPyAnc2VsZWN0ZWQnIDogJyd9YH0gb25DbGljaz17KCkgPT4gc2V0U2VsZWN0ZWRWaWV3KCdpbmZvcm1hdGlvbnMnKX0+XG4gICAgICAgICAgPEZpbGVUZXh0IC8+XG4gICAgICAgIDwvZGl2PlxuICAgICAgICA8ZGl2IGNsYXNzTmFtZT17YCR7c2VsZWN0ZWRWaWV3ID09PSAnbWFwJyA/ICdzZWxlY3RlZCcgOiAnJ31gfSBvbkNsaWNrPXsoKSA9PiBzZXRTZWxlY3RlZFZpZXcoJ21hcCcpfT5cbiAgICAgICAgICA8TWFwIC8+XG4gICAgICAgIDwvZGl2PlxuICAgICAgICA8ZGl2IGNsYXNzTmFtZT17YCR7c2VsZWN0ZWRWaWV3ID09PSAnc3RhdHMnID8gJ3NlbGVjdGVkJyA6ICcnfWB9IG9uQ2xpY2s9eygpID0+IHNldFNlbGVjdGVkVmlldygnc3RhdHMnKX0+XG4gICAgICAgICAgPEJhckNoYXJ0IC8+XG4gICAgICAgIDwvZGl2PlxuICAgICAgPC9kaXY+XG5cbiAgICAgIDxGb290ZXIgLz5cblxuICAgICAgPHN0eWxlIGpzeD57YFxuICAgICAgICAubW9iaWxlLXBhZ2UtY29udGFpbmVyIHtcbiAgICAgICAgICBkaXNwbGF5OiBmbGV4O1xuICAgICAgICAgIGZsZXgtZGlyZWN0aW9uOiBjb2x1bW47XG4gICAgICAgICAgZmxleDogMTtcbiAgICAgICAgfVxuXG4gICAgICAgIC52aWV3LXNlbGVjdG9yIHtcbiAgICAgICAgICBkaXNwbGF5OiBub25lO1xuICAgICAgICB9XG5cbiAgICAgICAgLnZpZXctc2VsZWN0b3IgPiBkaXYge1xuICAgICAgICAgIHBhZGRpbmc6IDAuNWVtO1xuICAgICAgICAgIG1hcmdpbjogYXV0bztcbiAgICAgICAgfVxuXG4gICAgICAgIC52aWV3LXNlbGVjdG9yID4gZGl2LnNlbGVjdGVkIHtcbiAgICAgICAgICBib3JkZXItdG9wOiAycHggc29saWQgJHtjb2xvcnMuYmx1ZX07XG4gICAgICAgIH1cblxuICAgICAgICBAbWVkaWEgKG1heC13aWR0aDogJHt0aGVtZS5tb2JpbGVEaXNwbGF5fSkge1xuICAgICAgICAgIC52aWV3LXNlbGVjdG9yIHtcbiAgICAgICAgICAgIGRpc3BsYXk6IGdyaWQ7XG4gICAgICAgICAgICBncmlkLXRlbXBsYXRlLWNvbHVtbnM6IDFmciAxZnIgMWZyO1xuICAgICAgICAgICAganVzdGlmeS1jb250ZW50OiBjZW50ZXI7XG4gICAgICAgICAgICBhbGlnbi1pdGVtczogY2VudGVyO1xuICAgICAgICAgICAgYmFja2dyb3VuZC1jb2xvcjogI2ZmZjtcbiAgICAgICAgICB9XG4gICAgICAgIH1cbiAgICAgIGB9PC9zdHlsZT5cbiAgICA8L2Rpdj5cbiAgKVxufVxuXG5leHBvcnQgZGVmYXVsdCBNb2JpbGVQYWdlXG4iXX0= */\n/*@ sourceURL=/Users/jerome/opencovid19-fr/dashboard/layouts/mobile.js */")));
+  }, ".mobile-page-container.__jsx-style-dynamic-selector{display:-webkit-box;display:-webkit-flex;display:-ms-flexbox;display:flex;-webkit-flex-direction:column;-ms-flex-direction:column;flex-direction:column;-webkit-flex:1;-ms-flex:1;flex:1;}.view-selector.__jsx-style-dynamic-selector{display:none;}.view-selector.__jsx-style-dynamic-selector>div.__jsx-style-dynamic-selector{padding:0.5em;margin:auto;}.view-selector.__jsx-style-dynamic-selector>div.selected.__jsx-style-dynamic-selector{border-top:2px solid ".concat(_styles_colors__WEBPACK_IMPORTED_MODULE_3__["default"].blue, ";}@media (max-width:").concat(_styles_theme__WEBPACK_IMPORTED_MODULE_4__["default"].mobileDisplay, "){.view-selector.__jsx-style-dynamic-selector{display:grid;grid-template-columns:1fr 1fr 1fr;-webkit-box-pack:center;-webkit-justify-content:center;-ms-flex-pack:center;justify-content:center;-webkit-align-items:center;-webkit-box-align:center;-ms-flex-align:center;align-items:center;background-color:#fff;}}\n/*# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbIi9Vc2Vycy9qZXJvbWUvb3BlbmNvdmlkMTktZnIvZGFzaGJvYXJkL2xheW91dHMvbW9iaWxlLmpzIl0sIm5hbWVzIjpbXSwibWFwcGluZ3MiOiJBQW9Ea0IsQUFHd0IsQUFNQSxBQUlDLEFBS29DLEFBS25DLGFBYmpCLEFBY3NDLENBVnhCLFlBQ2QscUJBVTJCLEdBTjNCLHdCQWZ3Qix3RUFzQkQsTUFyQmQsaUNBQ1Qsc0RBcUIwQixzQkFDeEIiLCJmaWxlIjoiL1VzZXJzL2plcm9tZS9vcGVuY292aWQxOS1mci9kYXNoYm9hcmQvbGF5b3V0cy9tb2JpbGUuanMiLCJzb3VyY2VzQ29udGVudCI6WyJpbXBvcnQgUmVhY3QsIHt1c2VTdGF0ZSwgdXNlQ29udGV4dH0gZnJvbSAncmVhY3QnXG5pbXBvcnQge0ZpbGVUZXh0LCBNYXAsIEJhckNoYXJ0Mn0gZnJvbSAncmVhY3QtZmVhdGhlcidcblxuaW1wb3J0IGNvbG9ycyBmcm9tICcuLi9zdHlsZXMvY29sb3JzJ1xuaW1wb3J0IHRoZW1lIGZyb20gJy4uL3N0eWxlcy90aGVtZSdcblxuaW1wb3J0IHtBcHBDb250ZXh0fSBmcm9tICcuLi9wYWdlcydcblxuaW1wb3J0IERhdGVOYXYgZnJvbSAnLi4vY29tcG9uZW50cy9kYXRlLW5hdidcbmltcG9ydCBTY3JvbGxhYmxlIGZyb20gJy4uL2NvbXBvbmVudHMvc2Nyb2xsYWJsZSdcbmltcG9ydCBSZWFjdE1hcEdsIGZyb20gJy4uL2NvbXBvbmVudHMvcmVhY3QtbWFwLWdsJ1xuaW1wb3J0IFN0YXRpc3RpY3MgZnJvbSAnLi4vY29tcG9uZW50cy9zdGF0aXN0aWNzJ1xuaW1wb3J0IEluZm9ybWF0aW9ucyBmcm9tICcuLi9jb21wb25lbnRzL2luZm9ybWF0aW9ucydcbmltcG9ydCBGb290ZXIgZnJvbSAnLi4vY29tcG9uZW50cy9mb290ZXInXG5cbmNvbnN0IFZJRVdTID0ge1xuICBtYXA6ICgpID0+IDxSZWFjdE1hcEdsIC8+LFxuICBzdGF0czogKCkgPT4gPFN0YXRpc3RpY3MgLz4sXG4gIGluZm9ybWF0aW9uczogKCkgPT4gPEluZm9ybWF0aW9ucyAvPlxufVxuXG5jb25zdCBNb2JpbGVQYWdlID0gKCkgPT4ge1xuICBjb25zdCBbc2VsZWN0ZWRWaWV3LCBzZXRTZWxlY3RlZFZpZXddID0gdXNlU3RhdGUoJ21hcCcpXG5cbiAgY29uc3QgYXBwID0gdXNlQ29udGV4dChBcHBDb250ZXh0KVxuXG4gIGNvbnN0IGhhbmRsZUNsaWNrID0gdmlldyA9PiB7XG4gICAgYXBwLnNldFNlbGVjdGVkTG9jYXRpb24obnVsbClcbiAgICBzZXRTZWxlY3RlZFZpZXcodmlldylcbiAgfVxuXG4gIHJldHVybiAoXG4gICAgPGRpdiBjbGFzc05hbWU9J21vYmlsZS1wYWdlLWNvbnRhaW5lcic+XG4gICAgICA8RGF0ZU5hdiBkaXNhYmxlZD17c2VsZWN0ZWRWaWV3ID09PSAnaW5mb3JtYXRpb25zJ30gLz5cbiAgICAgIDxTY3JvbGxhYmxlPlxuICAgICAgICB7VklFV1Nbc2VsZWN0ZWRWaWV3XShhcHApfVxuICAgICAgPC9TY3JvbGxhYmxlPlxuXG4gICAgICA8ZGl2IGNsYXNzTmFtZT0ndmlldy1zZWxlY3Rvcic+XG4gICAgICAgIDxkaXYgY2xhc3NOYW1lPXtgJHtzZWxlY3RlZFZpZXcgPT09ICdpbmZvcm1hdGlvbnMnID8gJ3NlbGVjdGVkJyA6ICcnfWB9IG9uQ2xpY2s9eygpID0+IGhhbmRsZUNsaWNrKCdpbmZvcm1hdGlvbnMnKX0+XG4gICAgICAgICAgPEZpbGVUZXh0IC8+XG4gICAgICAgIDwvZGl2PlxuICAgICAgICA8ZGl2IGNsYXNzTmFtZT17YCR7c2VsZWN0ZWRWaWV3ID09PSAnbWFwJyA/ICdzZWxlY3RlZCcgOiAnJ31gfSBvbkNsaWNrPXsoKSA9PiBoYW5kbGVDbGljaygnbWFwJyl9PlxuICAgICAgICAgIDxNYXAgLz5cbiAgICAgICAgPC9kaXY+XG4gICAgICAgIDxkaXYgY2xhc3NOYW1lPXtgJHtzZWxlY3RlZFZpZXcgPT09ICdzdGF0cycgPyAnc2VsZWN0ZWQnIDogJyd9YH0gb25DbGljaz17KCkgPT4gaGFuZGxlQ2xpY2soJ3N0YXRzJyl9PlxuICAgICAgICAgIDxCYXJDaGFydDIgLz5cbiAgICAgICAgPC9kaXY+XG4gICAgICA8L2Rpdj5cblxuICAgICAgeyFhcHAuaXNJZnJhbWUgJiYgPEZvb3RlciAvPn1cblxuICAgICAgPHN0eWxlIGpzeD57YFxuICAgICAgICAubW9iaWxlLXBhZ2UtY29udGFpbmVyIHtcbiAgICAgICAgICBkaXNwbGF5OiBmbGV4O1xuICAgICAgICAgIGZsZXgtZGlyZWN0aW9uOiBjb2x1bW47XG4gICAgICAgICAgZmxleDogMTtcbiAgICAgICAgfVxuXG4gICAgICAgIC52aWV3LXNlbGVjdG9yIHtcbiAgICAgICAgICBkaXNwbGF5OiBub25lO1xuICAgICAgICB9XG5cbiAgICAgICAgLnZpZXctc2VsZWN0b3IgPiBkaXYge1xuICAgICAgICAgIHBhZGRpbmc6IDAuNWVtO1xuICAgICAgICAgIG1hcmdpbjogYXV0bztcbiAgICAgICAgfVxuXG4gICAgICAgIC52aWV3LXNlbGVjdG9yID4gZGl2LnNlbGVjdGVkIHtcbiAgICAgICAgICBib3JkZXItdG9wOiAycHggc29saWQgJHtjb2xvcnMuYmx1ZX07XG4gICAgICAgIH1cblxuICAgICAgICBAbWVkaWEgKG1heC13aWR0aDogJHt0aGVtZS5tb2JpbGVEaXNwbGF5fSkge1xuICAgICAgICAgIC52aWV3LXNlbGVjdG9yIHtcbiAgICAgICAgICAgIGRpc3BsYXk6IGdyaWQ7XG4gICAgICAgICAgICBncmlkLXRlbXBsYXRlLWNvbHVtbnM6IDFmciAxZnIgMWZyO1xuICAgICAgICAgICAganVzdGlmeS1jb250ZW50OiBjZW50ZXI7XG4gICAgICAgICAgICBhbGlnbi1pdGVtczogY2VudGVyO1xuICAgICAgICAgICAgYmFja2dyb3VuZC1jb2xvcjogI2ZmZjtcbiAgICAgICAgICB9XG4gICAgICAgIH1cbiAgICAgIGB9PC9zdHlsZT5cbiAgICA8L2Rpdj5cbiAgKVxufVxuXG5leHBvcnQgZGVmYXVsdCBNb2JpbGVQYWdlXG4iXX0= */\n/*@ sourceURL=/Users/jerome/opencovid19-fr/dashboard/layouts/mobile.js */")));
 };
 
 /* harmony default export */ __webpack_exports__["default"] = (MobilePage);
@@ -1827,13 +2257,14 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var styled_jsx_style__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(styled_jsx_style__WEBPACK_IMPORTED_MODULE_0__);
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react */ "./node_modules/react/index.js");
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
-/* harmony import */ var _components_date_nav__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../components/date-nav */ "./components/date-nav.js");
-/* harmony import */ var _components_scrollable__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../components/scrollable */ "./components/scrollable.js");
-/* harmony import */ var _components_react_map_gl__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../components/react-map-gl */ "./components/react-map-gl/index.js");
-/* harmony import */ var _components_national_statistics__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../components/national-statistics */ "./components/national-statistics.js");
-/* harmony import */ var _components_informations__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ../components/informations */ "./components/informations.js");
-/* harmony import */ var _components_footer__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ../components/footer */ "./components/footer.js");
-/* harmony import */ var _styles_colors__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ../styles/colors */ "./styles/colors.js");
+/* harmony import */ var _pages__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../pages */ "./pages/index.js");
+/* harmony import */ var _components_date_nav__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../components/date-nav */ "./components/date-nav.js");
+/* harmony import */ var _components_scrollable__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../components/scrollable */ "./components/scrollable.js");
+/* harmony import */ var _components_react_map_gl__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../components/react-map-gl */ "./components/react-map-gl/index.js");
+/* harmony import */ var _components_statistics__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ../components/statistics */ "./components/statistics.js");
+/* harmony import */ var _components_informations__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ../components/informations */ "./components/informations.js");
+/* harmony import */ var _components_footer__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ../components/footer */ "./components/footer.js");
+/* harmony import */ var _styles_colors__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ../styles/colors */ "./styles/colors.js");
 var _jsxFileName = "/Users/jerome/opencovid19-fr/dashboard/layouts/screen.js";
 
 var __jsx = react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement;
@@ -1846,62 +2277,66 @@ var __jsx = react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement;
 
 
 
+
 var ScreenPage = function ScreenPage() {
+  var _useContext = Object(react__WEBPACK_IMPORTED_MODULE_1__["useContext"])(_pages__WEBPACK_IMPORTED_MODULE_2__["AppContext"]),
+      isIframe = _useContext.isIframe;
+
   return __jsx(react__WEBPACK_IMPORTED_MODULE_1___default.a.Fragment, null, __jsx("div", {
-    className: styled_jsx_style__WEBPACK_IMPORTED_MODULE_0___default.a.dynamic([["1075152791", [_styles_colors__WEBPACK_IMPORTED_MODULE_8__["default"].lightGrey]]]) + " " + 'menu',
-    __source: {
-      fileName: _jsxFileName,
-      lineNumber: 14
-    },
-    __self: this
-  }, __jsx(_components_date_nav__WEBPACK_IMPORTED_MODULE_2__["default"], {
-    __source: {
-      fileName: _jsxFileName,
-      lineNumber: 15
-    },
-    __self: this
-  }), __jsx(_components_scrollable__WEBPACK_IMPORTED_MODULE_3__["default"], {
-    __source: {
-      fileName: _jsxFileName,
-      lineNumber: 16
-    },
-    __self: this
-  }, __jsx(react__WEBPACK_IMPORTED_MODULE_1___default.a.Fragment, null, __jsx(_components_national_statistics__WEBPACK_IMPORTED_MODULE_5__["default"], {
+    className: styled_jsx_style__WEBPACK_IMPORTED_MODULE_0___default.a.dynamic([["1075152791", [_styles_colors__WEBPACK_IMPORTED_MODULE_9__["default"].lightGrey]]]) + " " + 'menu',
     __source: {
       fileName: _jsxFileName,
       lineNumber: 18
     },
     __self: this
-  }), __jsx(_components_informations__WEBPACK_IMPORTED_MODULE_6__["default"], {
+  }, __jsx(_components_date_nav__WEBPACK_IMPORTED_MODULE_3__["default"], {
     __source: {
       fileName: _jsxFileName,
       lineNumber: 19
     },
     __self: this
-  }))), __jsx(_components_footer__WEBPACK_IMPORTED_MODULE_7__["default"], {
+  }), __jsx(_components_scrollable__WEBPACK_IMPORTED_MODULE_4__["default"], {
+    __source: {
+      fileName: _jsxFileName,
+      lineNumber: 20
+    },
+    __self: this
+  }, __jsx(react__WEBPACK_IMPORTED_MODULE_1___default.a.Fragment, null, __jsx(_components_statistics__WEBPACK_IMPORTED_MODULE_6__["default"], {
     __source: {
       fileName: _jsxFileName,
       lineNumber: 22
     },
     __self: this
-  })), __jsx("div", {
-    className: styled_jsx_style__WEBPACK_IMPORTED_MODULE_0___default.a.dynamic([["1075152791", [_styles_colors__WEBPACK_IMPORTED_MODULE_8__["default"].lightGrey]]]) + " " + 'map',
+  }), __jsx(_components_informations__WEBPACK_IMPORTED_MODULE_7__["default"], {
     __source: {
       fileName: _jsxFileName,
-      lineNumber: 25
+      lineNumber: 23
     },
     __self: this
-  }, __jsx(_components_react_map_gl__WEBPACK_IMPORTED_MODULE_4__["default"], {
+  }))), !isIframe && __jsx(_components_footer__WEBPACK_IMPORTED_MODULE_8__["default"], {
     __source: {
       fileName: _jsxFileName,
       lineNumber: 26
     },
     __self: this
+  })), __jsx("div", {
+    className: styled_jsx_style__WEBPACK_IMPORTED_MODULE_0___default.a.dynamic([["1075152791", [_styles_colors__WEBPACK_IMPORTED_MODULE_9__["default"].lightGrey]]]) + " " + 'map',
+    __source: {
+      fileName: _jsxFileName,
+      lineNumber: 29
+    },
+    __self: this
+  }, __jsx(_components_react_map_gl__WEBPACK_IMPORTED_MODULE_5__["default"], {
+    __source: {
+      fileName: _jsxFileName,
+      lineNumber: 30
+    },
+    __self: this
   })), __jsx(styled_jsx_style__WEBPACK_IMPORTED_MODULE_0___default.a, {
     id: "1075152791",
-    dynamic: [_styles_colors__WEBPACK_IMPORTED_MODULE_8__["default"].lightGrey],
+    dynamic: [_styles_colors__WEBPACK_IMPORTED_MODULE_9__["default"].lightGrey],
     __self: this
-  }, ".menu.__jsx-style-dynamic-selector{z-index:1;display:-webkit-box;display:-webkit-flex;display:-ms-flexbox;display:flex;-webkit-flex-direction:column;-ms-flex-direction:column;flex-direction:column;max-width:400px;box-shadow:0 1px 4px ".concat(_styles_colors__WEBPACK_IMPORTED_MODULE_8__["default"].lightGrey, ";}.map.__jsx-style-dynamic-selector{-webkit-flex:1;-ms-flex:1;flex:1;height:100%;}\n/*# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbIi9Vc2Vycy9qZXJvbWUvb3BlbmNvdmlkMTktZnIvZGFzaGJvYXJkL2xheW91dHMvc2NyZWVuLmpzIl0sIm5hbWVzIjpbXSwibWFwcGluZ3MiOiJBQTRCZ0IsQUFHbUIsQUFRSCxVQVBNLHVCQVFELFlBQ2QsdUNBUndCLDhFQUNOLGdCQUNrQyxrREFDcEQiLCJmaWxlIjoiL1VzZXJzL2plcm9tZS9vcGVuY292aWQxOS1mci9kYXNoYm9hcmQvbGF5b3V0cy9zY3JlZW4uanMiLCJzb3VyY2VzQ29udGVudCI6WyJpbXBvcnQgUmVhY3QgZnJvbSAncmVhY3QnXG5cbmltcG9ydCBEYXRlTmF2IGZyb20gJy4uL2NvbXBvbmVudHMvZGF0ZS1uYXYnXG5pbXBvcnQgU2Nyb2xsYWJsZSBmcm9tICcuLi9jb21wb25lbnRzL3Njcm9sbGFibGUnXG5pbXBvcnQgUmVhY3RNYXBHbCBmcm9tICcuLi9jb21wb25lbnRzL3JlYWN0LW1hcC1nbCdcbmltcG9ydCBOYXRpb25hbFN0YXRpc3RpY3MgZnJvbSAnLi4vY29tcG9uZW50cy9uYXRpb25hbC1zdGF0aXN0aWNzJ1xuaW1wb3J0IEluZm9ybWF0aW9ucyBmcm9tICcuLi9jb21wb25lbnRzL2luZm9ybWF0aW9ucydcbmltcG9ydCBGb290ZXIgZnJvbSAnLi4vY29tcG9uZW50cy9mb290ZXInXG5cbmltcG9ydCBjb2xvcnMgZnJvbSAnLi4vc3R5bGVzL2NvbG9ycydcblxuY29uc3QgU2NyZWVuUGFnZSA9ICgpID0+IChcbiAgPD5cbiAgICA8ZGl2IGNsYXNzTmFtZT0nbWVudSc+XG4gICAgICA8RGF0ZU5hdiAvPlxuICAgICAgPFNjcm9sbGFibGU+XG4gICAgICAgIDw+XG4gICAgICAgICAgPE5hdGlvbmFsU3RhdGlzdGljcyAvPlxuICAgICAgICAgIDxJbmZvcm1hdGlvbnMgLz5cbiAgICAgICAgPC8+XG4gICAgICA8L1Njcm9sbGFibGU+XG4gICAgICA8Rm9vdGVyIC8+XG4gICAgPC9kaXY+XG5cbiAgICA8ZGl2IGNsYXNzTmFtZT0nbWFwJz5cbiAgICAgIDxSZWFjdE1hcEdsIC8+XG4gICAgPC9kaXY+XG5cbiAgICA8c3R5bGUganN4PntgXG4gICAgICAubWVudSB7XG4gICAgICAgIHotaW5kZXg6IDE7XG4gICAgICAgIGRpc3BsYXk6IGZsZXg7XG4gICAgICAgIGZsZXgtZGlyZWN0aW9uOiBjb2x1bW47XG4gICAgICAgIG1heC13aWR0aDogNDAwcHg7XG4gICAgICAgIGJveC1zaGFkb3c6IDAgMXB4IDRweCAke2NvbG9ycy5saWdodEdyZXl9O1xuICAgICAgfVxuXG4gICAgICAubWFwIHtcbiAgICAgICAgZmxleDogMTtcbiAgICAgICAgaGVpZ2h0OiAxMDAlO1xuICAgICAgfVxuICAgIGB9PC9zdHlsZT5cbiAgPC8+XG4pXG5cbmV4cG9ydCBkZWZhdWx0IFNjcmVlblBhZ2VcbiJdfQ== */\n/*@ sourceURL=/Users/jerome/opencovid19-fr/dashboard/layouts/screen.js */")));
+  }, ".menu.__jsx-style-dynamic-selector{z-index:1;display:-webkit-box;display:-webkit-flex;display:-ms-flexbox;display:flex;-webkit-flex-direction:column;-ms-flex-direction:column;flex-direction:column;max-width:400px;box-shadow:0 1px 4px ".concat(_styles_colors__WEBPACK_IMPORTED_MODULE_9__["default"].lightGrey, ";}.map.__jsx-style-dynamic-selector{-webkit-flex:1;-ms-flex:1;flex:1;height:100%;}\n/*# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbIi9Vc2Vycy9qZXJvbWUvb3BlbmNvdmlkMTktZnIvZGFzaGJvYXJkL2xheW91dHMvc2NyZWVuLmpzIl0sIm5hbWVzIjpbXSwibWFwcGluZ3MiOiJBQWdDa0IsQUFHbUIsQUFRSCxVQVBNLHVCQVFELFlBQ2QsdUNBUndCLDhFQUNOLGdCQUNrQyxrREFDcEQiLCJmaWxlIjoiL1VzZXJzL2plcm9tZS9vcGVuY292aWQxOS1mci9kYXNoYm9hcmQvbGF5b3V0cy9zY3JlZW4uanMiLCJzb3VyY2VzQ29udGVudCI6WyJpbXBvcnQgUmVhY3QsIHt1c2VDb250ZXh0fSBmcm9tICdyZWFjdCdcblxuaW1wb3J0IHtBcHBDb250ZXh0fSBmcm9tICcuLi9wYWdlcydcblxuaW1wb3J0IERhdGVOYXYgZnJvbSAnLi4vY29tcG9uZW50cy9kYXRlLW5hdidcbmltcG9ydCBTY3JvbGxhYmxlIGZyb20gJy4uL2NvbXBvbmVudHMvc2Nyb2xsYWJsZSdcbmltcG9ydCBSZWFjdE1hcEdsIGZyb20gJy4uL2NvbXBvbmVudHMvcmVhY3QtbWFwLWdsJ1xuaW1wb3J0IFN0YXRpc3RpY3MgZnJvbSAnLi4vY29tcG9uZW50cy9zdGF0aXN0aWNzJ1xuaW1wb3J0IEluZm9ybWF0aW9ucyBmcm9tICcuLi9jb21wb25lbnRzL2luZm9ybWF0aW9ucydcbmltcG9ydCBGb290ZXIgZnJvbSAnLi4vY29tcG9uZW50cy9mb290ZXInXG5cbmltcG9ydCBjb2xvcnMgZnJvbSAnLi4vc3R5bGVzL2NvbG9ycydcblxuY29uc3QgU2NyZWVuUGFnZSA9ICgpID0+IHtcbiAgY29uc3Qge2lzSWZyYW1lfSA9IHVzZUNvbnRleHQoQXBwQ29udGV4dClcbiAgcmV0dXJuIChcbiAgICA8PlxuICAgICAgPGRpdiBjbGFzc05hbWU9J21lbnUnPlxuICAgICAgICA8RGF0ZU5hdiAvPlxuICAgICAgICA8U2Nyb2xsYWJsZT5cbiAgICAgICAgICA8PlxuICAgICAgICAgICAgPFN0YXRpc3RpY3MgLz5cbiAgICAgICAgICAgIDxJbmZvcm1hdGlvbnMgLz5cbiAgICAgICAgICA8Lz5cbiAgICAgICAgPC9TY3JvbGxhYmxlPlxuICAgICAgICB7IWlzSWZyYW1lICYmIDxGb290ZXIgLz59XG4gICAgICA8L2Rpdj5cblxuICAgICAgPGRpdiBjbGFzc05hbWU9J21hcCc+XG4gICAgICAgIDxSZWFjdE1hcEdsIC8+XG4gICAgICA8L2Rpdj5cblxuICAgICAgPHN0eWxlIGpzeD57YFxuICAgICAgLm1lbnUge1xuICAgICAgICB6LWluZGV4OiAxO1xuICAgICAgICBkaXNwbGF5OiBmbGV4O1xuICAgICAgICBmbGV4LWRpcmVjdGlvbjogY29sdW1uO1xuICAgICAgICBtYXgtd2lkdGg6IDQwMHB4O1xuICAgICAgICBib3gtc2hhZG93OiAwIDFweCA0cHggJHtjb2xvcnMubGlnaHRHcmV5fTtcbiAgICAgIH1cblxuICAgICAgLm1hcCB7XG4gICAgICAgIGZsZXg6IDE7XG4gICAgICAgIGhlaWdodDogMTAwJTtcbiAgICAgIH1cbiAgICBgfTwvc3R5bGU+XG4gICAgPC8+XG4gIClcbn1cblxuZXhwb3J0IGRlZmF1bHQgU2NyZWVuUGFnZVxuIl19 */\n/*@ sourceURL=/Users/jerome/opencovid19-fr/dashboard/layouts/screen.js */")));
 };
 
 /* harmony default export */ __webpack_exports__["default"] = (ScreenPage);
@@ -1939,10 +2374,11 @@ __webpack_require__.r(__webpack_exports__);
  // eslint-disable-line import/no-unassigned-import
 
 var SOURCE_PRIORITIES = {
-  'sante-publique-france': 1,
-  'agences-regionales-sante': 2,
-  prefectures: 3,
-  'lperez-historical-data': 4
+  'ministere-sante': 1,
+  'sante-publique-france': 2,
+  'agences-regionales-sante': 3,
+  prefectures: 4,
+  'lperez-historical-data': 5
 };
 function fetchJson(url) {
   var response;
@@ -1983,11 +2419,25 @@ function consolidate(records) {
       lodash_defaults__WEBPACK_IMPORTED_MODULE_2___default()(acc, row);
 
       return acc;
-    }, {}), ['casConfirmes', 'deces', 'reanimation', 'date', 'code', 'nom']);
+    }, {}), ['casConfirmes', 'deces', 'reanimation', 'hospitalises', 'date', 'code', 'nom']);
   });
 }
 
-var getData = function getData() {
+var GOUV_START_DATE = '2020-03-02';
+
+function filterRecords(records, isGouv) {
+  if (!isGouv) {
+    return records;
+  }
+
+  return records.filter(function (r) {
+    return ['ministere-sante', 'sante-publique-france'].includes(r.sourceType);
+  }).filter(function (r) {
+    return r.date >= GOUV_START_DATE;
+  });
+}
+
+var getData = function getData(isGouv) {
   var records;
   return _babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_0___default.a.async(function getData$(_context2) {
     while (1) {
@@ -1998,7 +2448,7 @@ var getData = function getData() {
 
         case 2:
           records = _context2.sent;
-          return _context2.abrupt("return", consolidate(records));
+          return _context2.abrupt("return", consolidate(filterRecords(records, isGouv)));
 
         case 4:
         case "end":
@@ -51901,6 +52351,19 @@ webpackContext.id = "./node_modules/moment/locale sync recursive ^\\.\\/.*$";
 
 /***/ }),
 
+/***/ "./node_modules/native-url/dist/index.js":
+/*!***********************************************!*\
+  !*** ./node_modules/native-url/dist/index.js ***!
+  \***********************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+var e,t=(e=__webpack_require__(/*! querystring */ "./node_modules/querystring-es3/index.js"))&&"object"==typeof e&&"default"in e?e.default:e,r=/https?|ftp|gopher|file/;function o(e){"string"==typeof e&&(e=f(e));var o=function(e,t,r){var o=e.auth,a=e.hostname,s=e.protocol||"",h=e.pathname||"",c=e.hash||"",p=e.query||"",n=!1;o=o?encodeURIComponent(o).replace(/%3A/i,":")+"@":"",e.host?n=o+e.host:a&&(n=o+(~a.indexOf(":")?"["+a+"]":a),e.port&&(n+=":"+e.port)),p&&"object"==typeof p&&(p=t.encode(p));var l=e.search||p&&"?"+p||"";return s&&":"!==s.substr(-1)&&(s+=":"),e.slashes||(!s||r.test(s))&&!1!==n?(n="//"+(n||""),h&&"/"!==h[0]&&(h="/"+h)):n||(n=""),c&&"#"!==c[0]&&(c="#"+c),l&&"?"!==l[0]&&(l="?"+l),{protocol:s,host:n,pathname:h=h.replace(/[?#]/g,encodeURIComponent),search:l=l.replace("#","%23"),hash:c}}(e,t,r);return""+o.protocol+o.host+o.pathname+o.search+o.hash}var a="http://",s="w.w",h=a+s,c=/^https?|ftp|gopher|file/,p=/^(.*?)([#?].*)/,n=/^([a-z0-9.+-]*:)(\/{0,3})(.*)/i,l=/^([a-z0-9.+-]*:)?\/\/\/*/i,i=/^([a-z0-9.+-]*:)(\/{0,2})\[(.*)\]$/i;function u(e){try{return decodeURI(e)}catch(t){return e}}function f(e,r,a){void 0===r&&(r=!1),void 0===a&&(a=!1);var f=(e=e.trim()).match(p);e=f?u(f[1]).replace(/\\/g,"/")+f[2]:u(e).replace(/\\/g,"/"),i.test(e)&&"/"!==e.slice(-1)&&(e+="/");var m=!/(^javascript)/.test(e)&&e.match(n),v=l.test(e),d="";m&&(c.test(m[1])||(d=m[1].toLowerCase(),e=""+m[2]+m[3]),m[2]||(v=!1,c.test(m[1])?(d=m[1],e=""+m[3]):e="//"+m[3]),3!==m[2].length&&1!==m[2].length||(d=m[1],e="/"+m[3]));var g,b=e.match(/(:[0-9]+)/),y="";b&&b[1]&&3===b[1].length&&(e=e.replace(y=b[1],y+"00"));var w={},x="",R="";try{g=new URL(e)}catch(t){x=t,d||a||!/^\/\//.test(e)||/^\/\/.+[@.]/.test(e)||(R="/",e=e.substr(1));try{g=new URL(e,h)}catch(e){return w.protocol=d,w.href=d,w}}w.slashes=v&&!R,w.host=g.host===s?"":g.host,w.hostname=g.hostname===s?"":g.hostname.replace(/(\[|\])/g,""),w.protocol=x?d||null:g.protocol,w.search=g.search.replace(/\\/g,"%5C"),w.hash=g.hash.replace(/\\/g,"%5C");var U=e.split("#");!w.search&&~U[0].indexOf("?")&&(w.search="?"),w.hash||""!==U[1]||(w.hash="#"),w.query=r?t.decode(g.search.substr(1)):w.search.substr(1),w.pathname=R+u(g.pathname).replace(/"/g,"%22"),"about:"===w.protocol&&"blank"===w.pathname&&(w.protocol="",w.pathname=""),x&&"/"!==e[0]&&(w.pathname=w.pathname.substr(1)),d&&!c.test(d)&&"/"!==e.slice(-1)&&"/"===w.pathname&&(w.pathname=""),w.path=w.pathname+w.search,w.auth=[g.username,g.password].map(decodeURIComponent).filter(Boolean).join(":"),w.port=g.port,y&&(w.host=w.host.replace(y+"00",y),w.port=w.port.slice(0,-2)),w.href=R?""+w.pathname+w.search+w.hash:o(w);var j=/^(file)/.test(w.href)?["host","hostname"]:[];return Object.keys(w).forEach(function(e){~j.indexOf(e)||(w[e]=w[e]||null)}),w}var m=/^([a-z0-9.+-]*:\/\/\/)([a-z0-9.+-]:\/*)?/i,v=/https?|ftp|gopher|file/;function d(e,t){var r="string"==typeof e?f(e):e;e="object"==typeof e?o(e):e;var s=f(t),c="";r.protocol&&!r.slashes&&(c=r.protocol,e=e.replace(r.protocol,""),c+="/"===t[0]||"/"===e[0]?"/":""),c&&s.protocol&&(c="",s.slashes||(c=s.protocol,t=t.replace(s.protocol,"")));var p=e.match(m);p&&!s.protocol&&(e=e.substr((c=p[1]+(p[2]||"")).length),/^\/\/[^\/]/.test(t)&&(c=c.slice(0,-1)));var n=new URL(e,h+"/"),l=new URL(t,n).toString().replace(h,""),i=s.protocol||r.protocol;return i+=r.slashes||s.slashes?"//":"",!c&&i?l=l.replace(a,i):c&&(l=l.replace(a,"")),v.test(l)||~t.indexOf(".")||"/"===e.slice(-1)||"/"===t.slice(-1)||"/"!==l.slice(-1)||(l=l.slice(0,-1)),c&&(l=c+("/"===l[0]?l.substr(1):l)),l}exports.parse=f,exports.format=o,exports.resolve=d,exports.resolveObject=function(e,t){return f(d(e,t))};
+//# sourceMappingURL=index.js.map
+
+
+/***/ }),
+
 /***/ "./node_modules/next/dist/build/polyfills/fetch/index.js":
 /*!***************************************************************!*\
   !*** ./node_modules/next/dist/build/polyfills/fetch/index.js ***!
@@ -51944,6 +52407,230 @@ module.exports = (__webpack_require__(/*! dll-reference dll_82519ec661270f7f484f
       return mod
     }]);
   
+
+/***/ }),
+
+/***/ "./node_modules/next/dist/client/router.js":
+/*!*************************************************!*\
+  !*** ./node_modules/next/dist/client/router.js ***!
+  \*************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+var _construct = __webpack_require__(/*! @babel/runtime/helpers/construct */ "./node_modules/next/node_modules/@babel/runtime/helpers/construct.js");
+
+var _interopRequireWildcard = __webpack_require__(/*! @babel/runtime/helpers/interopRequireWildcard */ "./node_modules/next/node_modules/@babel/runtime/helpers/interopRequireWildcard.js");
+
+var _interopRequireDefault = __webpack_require__(/*! @babel/runtime/helpers/interopRequireDefault */ "./node_modules/next/node_modules/@babel/runtime/helpers/interopRequireDefault.js");
+
+exports.__esModule = true;
+exports.useRouter = useRouter;
+exports.makePublicRouterInstance = makePublicRouterInstance;
+exports.createRouter = exports.withRouter = exports["default"] = void 0;
+
+var _react = _interopRequireDefault(__webpack_require__(/*! react */ "./node_modules/react/index.js"));
+
+var _router2 = _interopRequireWildcard(__webpack_require__(/*! ../next-server/lib/router/router */ "./node_modules/next/dist/next-server/lib/router/router.js"));
+
+exports.Router = _router2["default"];
+exports.NextRouter = _router2.NextRouter;
+
+var _routerContext = __webpack_require__(/*! ../next-server/lib/router-context */ "./node_modules/next/dist/next-server/lib/router-context.js");
+
+var _withRouter = _interopRequireDefault(__webpack_require__(/*! ./with-router */ "./node_modules/next/dist/client/with-router.js"));
+
+exports.withRouter = _withRouter["default"];
+/* global window */
+
+var singletonRouter = {
+  router: null,
+  // holds the actual router instance
+  readyCallbacks: [],
+  ready: function ready(cb) {
+    if (this.router) return cb();
+
+    if (true) {
+      this.readyCallbacks.push(cb);
+    }
+  }
+}; // Create public properties and methods of the router in the singletonRouter
+
+var urlPropertyFields = ['pathname', 'route', 'query', 'asPath', 'components', 'isFallback'];
+var routerEvents = ['routeChangeStart', 'beforeHistoryChange', 'routeChangeComplete', 'routeChangeError', 'hashChangeStart', 'hashChangeComplete'];
+var coreMethodFields = ['push', 'replace', 'reload', 'back', 'prefetch', 'beforePopState']; // Events is a static property on the router, the router doesn't have to be initialized to use it
+
+Object.defineProperty(singletonRouter, 'events', {
+  get: function get() {
+    return _router2["default"].events;
+  }
+});
+urlPropertyFields.forEach(function (field) {
+  // Here we need to use Object.defineProperty because, we need to return
+  // the property assigned to the actual router
+  // The value might get changed as we change routes and this is the
+  // proper way to access it
+  Object.defineProperty(singletonRouter, field, {
+    get: function get() {
+      var router = getRouter();
+      return router[field];
+    }
+  });
+});
+coreMethodFields.forEach(function (field) {
+  // We don't really know the types here, so we add them later instead
+  ;
+
+  singletonRouter[field] = function () {
+    var router = getRouter();
+    return router[field].apply(router, arguments);
+  };
+});
+routerEvents.forEach(function (event) {
+  singletonRouter.ready(function () {
+    _router2["default"].events.on(event, function () {
+      var eventField = "on" + event.charAt(0).toUpperCase() + event.substring(1);
+      var _singletonRouter = singletonRouter;
+
+      if (_singletonRouter[eventField]) {
+        try {
+          _singletonRouter[eventField].apply(_singletonRouter, arguments);
+        } catch (err) {
+          // tslint:disable-next-line:no-console
+          console.error("Error when running the Router event: " + eventField); // tslint:disable-next-line:no-console
+
+          console.error(err.message + "\n" + err.stack);
+        }
+      }
+    });
+  });
+});
+
+function getRouter() {
+  if (!singletonRouter.router) {
+    var message = 'No router instance found.\n' + 'You should only use "next/router" inside the client side of your app.\n';
+    throw new Error(message);
+  }
+
+  return singletonRouter.router;
+} // Export the singletonRouter and this is the public API.
+
+
+var _default = singletonRouter; // Reexport the withRoute HOC
+
+exports["default"] = _default;
+
+function useRouter() {
+  return _react["default"].useContext(_routerContext.RouterContext);
+} // INTERNAL APIS
+// -------------
+// (do not use following exports inside the app)
+// Create a router and assign it as the singleton instance.
+// This is used in client side when we are initilizing the app.
+// This should **not** use inside the server.
+
+
+var createRouter = function createRouter() {
+  for (var _len = arguments.length, args = new Array(_len), _key = 0; _key < _len; _key++) {
+    args[_key] = arguments[_key];
+  }
+
+  singletonRouter.router = _construct(_router2["default"], args);
+  singletonRouter.readyCallbacks.forEach(function (cb) {
+    return cb();
+  });
+  singletonRouter.readyCallbacks = [];
+  return singletonRouter.router;
+}; // This function is used to create the `withRouter` router instance
+
+
+exports.createRouter = createRouter;
+
+function makePublicRouterInstance(router) {
+  var _router = router;
+  var instance = {};
+  var _iteratorNormalCompletion = true;
+  var _didIteratorError = false;
+  var _iteratorError = undefined;
+
+  try {
+    for (var _iterator = urlPropertyFields[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+      var property = _step.value;
+
+      if (typeof _router[property] === 'object') {
+        instance[property] = Object.assign({}, _router[property]); // makes sure query is not stateful
+
+        continue;
+      }
+
+      instance[property] = _router[property];
+    } // Events is a static property on the router, the router doesn't have to be initialized to use it
+
+  } catch (err) {
+    _didIteratorError = true;
+    _iteratorError = err;
+  } finally {
+    try {
+      if (!_iteratorNormalCompletion && _iterator["return"] != null) {
+        _iterator["return"]();
+      }
+    } finally {
+      if (_didIteratorError) {
+        throw _iteratorError;
+      }
+    }
+  }
+
+  instance.events = _router2["default"].events;
+  coreMethodFields.forEach(function (field) {
+    instance[field] = function () {
+      return _router[field].apply(_router, arguments);
+    };
+  });
+  return instance;
+}
+
+/***/ }),
+
+/***/ "./node_modules/next/dist/client/with-router.js":
+/*!******************************************************!*\
+  !*** ./node_modules/next/dist/client/with-router.js ***!
+  \******************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+var _interopRequireDefault = __webpack_require__(/*! @babel/runtime/helpers/interopRequireDefault */ "./node_modules/next/node_modules/@babel/runtime/helpers/interopRequireDefault.js");
+
+exports.__esModule = true;
+exports["default"] = withRouter;
+
+var _react = _interopRequireDefault(__webpack_require__(/*! react */ "./node_modules/react/index.js"));
+
+var _router = __webpack_require__(/*! ./router */ "./node_modules/next/dist/client/router.js");
+
+function withRouter(ComposedComponent) {
+  function WithRouterWrapper(props) {
+    return _react["default"].createElement(ComposedComponent, Object.assign({
+      router: (0, _router.useRouter)()
+    }, props));
+  }
+
+  WithRouterWrapper.getInitialProps = ComposedComponent.getInitialProps // This is needed to allow checking for custom getInitialProps in _app
+  ;
+  WithRouterWrapper.origGetInitialProps = ComposedComponent.origGetInitialProps;
+
+  if (true) {
+    var name = ComposedComponent.displayName || ComposedComponent.name || 'Unknown';
+    WithRouterWrapper.displayName = "withRouter(" + name + ")";
+  }
+
+  return WithRouterWrapper;
+}
 
 /***/ }),
 
@@ -52231,6 +52918,998 @@ exports["default"] = Head;
 
 /***/ }),
 
+/***/ "./node_modules/next/dist/next-server/lib/mitt.js":
+/*!********************************************************!*\
+  !*** ./node_modules/next/dist/next-server/lib/mitt.js ***!
+  \********************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+/*
+MIT License
+
+Copyright (c) Jason Miller (https://jasonformat.com/)
+
+Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+*/
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+function mitt() {
+  var all = Object.create(null);
+  return {
+    on: function on(type, handler) {
+      ;
+      (all[type] || (all[type] = [])).push(handler);
+    },
+    off: function off(type, handler) {
+      if (all[type]) {
+        // tslint:disable-next-line:no-bitwise
+        all[type].splice(all[type].indexOf(handler) >>> 0, 1);
+      }
+    },
+    emit: function emit(type) {
+      for (var _len = arguments.length, evts = new Array(_len > 1 ? _len - 1 : 0), _key = 1; _key < _len; _key++) {
+        evts[_key - 1] = arguments[_key];
+      }
+
+      // eslint-disable-next-line array-callback-return
+      ;
+      (all[type] || []).slice().map(function (handler) {
+        handler.apply(void 0, evts);
+      });
+    }
+  };
+}
+
+exports["default"] = mitt;
+
+/***/ }),
+
+/***/ "./node_modules/next/dist/next-server/lib/router-context.js":
+/*!******************************************************************!*\
+  !*** ./node_modules/next/dist/next-server/lib/router-context.js ***!
+  \******************************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+var __importStar = this && this.__importStar || function (mod) {
+  if (mod && mod.__esModule) return mod;
+  var result = {};
+  if (mod != null) for (var k in mod) {
+    if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
+  }
+  result["default"] = mod;
+  return result;
+};
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var React = __importStar(__webpack_require__(/*! react */ "./node_modules/react/index.js"));
+
+exports.RouterContext = React.createContext(null);
+
+/***/ }),
+
+/***/ "./node_modules/next/dist/next-server/lib/router/router.js":
+/*!*****************************************************************!*\
+  !*** ./node_modules/next/dist/next-server/lib/router/router.js ***!
+  \*****************************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+var _regeneratorRuntime = __webpack_require__(/*! @babel/runtime/regenerator */ "./node_modules/next/node_modules/@babel/runtime/regenerator/index.js");
+
+var _slicedToArray = __webpack_require__(/*! @babel/runtime/helpers/slicedToArray */ "./node_modules/next/node_modules/@babel/runtime/helpers/slicedToArray.js");
+
+var _classCallCheck = __webpack_require__(/*! @babel/runtime/helpers/classCallCheck */ "./node_modules/next/node_modules/@babel/runtime/helpers/classCallCheck.js");
+
+var _createClass = __webpack_require__(/*! @babel/runtime/helpers/createClass */ "./node_modules/next/node_modules/@babel/runtime/helpers/createClass.js");
+
+var __importDefault = this && this.__importDefault || function (mod) {
+  return mod && mod.__esModule ? mod : {
+    "default": mod
+  };
+};
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var url_1 = __webpack_require__(/*! url */ "./node_modules/native-url/dist/index.js");
+
+var mitt_1 = __importDefault(__webpack_require__(/*! ../mitt */ "./node_modules/next/dist/next-server/lib/mitt.js"));
+
+var utils_1 = __webpack_require__(/*! ../utils */ "./node_modules/next/dist/next-server/lib/utils.js");
+
+var is_dynamic_1 = __webpack_require__(/*! ./utils/is-dynamic */ "./node_modules/next/dist/next-server/lib/router/utils/is-dynamic.js");
+
+var route_matcher_1 = __webpack_require__(/*! ./utils/route-matcher */ "./node_modules/next/dist/next-server/lib/router/utils/route-matcher.js");
+
+var route_regex_1 = __webpack_require__(/*! ./utils/route-regex */ "./node_modules/next/dist/next-server/lib/router/utils/route-regex.js");
+
+function addBasePath(path) {
+  // variable is always a string
+  var p = "";
+  return path.indexOf(p) !== 0 ? p + path : path;
+}
+
+function toRoute(path) {
+  return path.replace(/\/$/, '') || '/';
+}
+
+var prepareRoute = function prepareRoute(path) {
+  return toRoute(!path || path === '/' ? '/index' : path);
+};
+
+function fetchNextData(pathname, query, isServerRender, cb) {
+  var attempts = isServerRender ? 3 : 1;
+
+  function getResponse() {
+    return fetch(utils_1.formatWithValidation({
+      // @ts-ignore __NEXT_DATA__
+      pathname: "/_next/data/".concat(__NEXT_DATA__.buildId).concat(pathname, ".json"),
+      query: query
+    }), {
+      // Cookies are required to be present for Next.js' SSG "Preview Mode".
+      // Cookies may also be required for `getServerSideProps`.
+      //
+      // > `fetch` won’t send cookies, unless you set the credentials init
+      // > option.
+      // https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API/Using_Fetch
+      //
+      // > For maximum browser compatibility when it comes to sending &
+      // > receiving cookies, always supply the `credentials: 'same-origin'`
+      // > option instead of relying on the default.
+      // https://github.com/github/fetch#caveats
+      credentials: 'same-origin'
+    }).then(function (res) {
+      if (!res.ok) {
+        if (--attempts > 0 && res.status >= 500) {
+          return getResponse();
+        }
+
+        throw new Error("Failed to load static props");
+      }
+
+      return res.json();
+    });
+  }
+
+  return getResponse().then(function (data) {
+    return cb ? cb(data) : data;
+  })["catch"](function (err) {
+    // We should only trigger a server-side transition if this was caused
+    // on a client-side transition. Otherwise, we'd get into an infinite
+    // loop.
+    if (!isServerRender) {
+      ;
+      err.code = 'PAGE_LOAD_ERROR';
+    }
+
+    throw err;
+  });
+}
+
+var Router = /*#__PURE__*/function () {
+  function Router(pathname, query, as, _ref) {
+    var _this = this;
+
+    var initialProps = _ref.initialProps,
+        pageLoader = _ref.pageLoader,
+        App = _ref.App,
+        wrapApp = _ref.wrapApp,
+        Component = _ref.Component,
+        err = _ref.err,
+        subscription = _ref.subscription,
+        isFallback = _ref.isFallback;
+
+    _classCallCheck(this, Router);
+
+    // Static Data Cache
+    this.sdc = {};
+
+    this.onPopState = function (e) {
+      if (!e.state) {
+        // We get state as undefined for two reasons.
+        //  1. With older safari (< 8) and older chrome (< 34)
+        //  2. When the URL changed with #
+        //
+        // In the both cases, we don't need to proceed and change the route.
+        // (as it's already changed)
+        // But we can simply replace the state with the new changes.
+        // Actually, for (1) we don't need to nothing. But it's hard to detect that event.
+        // So, doing the following for (1) does no harm.
+        var _pathname = _this.pathname,
+            _query = _this.query;
+
+        _this.changeState('replaceState', utils_1.formatWithValidation({
+          pathname: _pathname,
+          query: _query
+        }), utils_1.getURL());
+
+        return;
+      } // Make sure we don't re-render on initial load,
+      // can be caused by navigating back from an external site
+
+
+      if (e.state && _this.isSsr && e.state.as === _this.asPath && url_1.parse(e.state.url).pathname === _this.pathname) {
+        return;
+      } // If the downstream application returns falsy, return.
+      // They will then be responsible for handling the event.
+
+
+      if (_this._bps && !_this._bps(e.state)) {
+        return;
+      }
+
+      var _e$state = e.state,
+          url = _e$state.url,
+          as = _e$state.as,
+          options = _e$state.options;
+
+      if (true) {
+        if (typeof url === 'undefined' || typeof as === 'undefined') {
+          console.warn('`popstate` event triggered but `event.state` did not have `url` or `as` https://err.sh/zeit/next.js/popstate-state-empty');
+        }
+      }
+
+      _this.replace(url, as, options);
+    };
+
+    this._getStaticData = function (asPath) {
+      var pathname = prepareRoute(url_1.parse(asPath).pathname);
+      return  false ? undefined : fetchNextData(pathname, null, _this.isSsr, function (data) {
+        return _this.sdc[pathname] = data;
+      });
+    };
+
+    this._getServerData = function (asPath) {
+      var _url_1$parse = url_1.parse(asPath, true),
+          pathname = _url_1$parse.pathname,
+          query = _url_1$parse.query;
+
+      pathname = prepareRoute(pathname);
+      return fetchNextData(pathname, query, _this.isSsr);
+    }; // represents the current component key
+
+
+    this.route = toRoute(pathname); // set up the component cache (by route keys)
+
+    this.components = {}; // We should not keep the cache, if there's an error
+    // Otherwise, this cause issues when when going back and
+    // come again to the errored page.
+
+    if (pathname !== '/_error') {
+      this.components[this.route] = {
+        Component: Component,
+        props: initialProps,
+        err: err,
+        __N_SSG: initialProps && initialProps.__N_SSG,
+        __N_SSP: initialProps && initialProps.__N_SSP
+      };
+    }
+
+    this.components['/_app'] = {
+      Component: App
+    }; // Backwards compat for Router.router.events
+    // TODO: Should be remove the following major version as it was never documented
+
+    this.events = Router.events;
+    this.pageLoader = pageLoader;
+    this.pathname = pathname;
+    this.query = query; // if auto prerendered and dynamic route wait to update asPath
+    // until after mount to prevent hydration mismatch
+
+    this.asPath = // @ts-ignore this is temporarily global (attached to window)
+    is_dynamic_1.isDynamicRoute(pathname) && __NEXT_DATA__.autoExport ? pathname : as;
+    this.sub = subscription;
+    this.clc = null;
+    this._wrapApp = wrapApp; // make sure to ignore extra popState in safari on navigating
+    // back from external site
+
+    this.isSsr = true;
+    this.isFallback = isFallback;
+
+    if (true) {
+      // in order for `e.state` to work on the `onpopstate` event
+      // we have to register the initial route upon initialization
+      this.changeState('replaceState', utils_1.formatWithValidation({
+        pathname: pathname,
+        query: query
+      }), as);
+      window.addEventListener('popstate', this.onPopState);
+    }
+  } // @deprecated backwards compatibility even though it's a private method.
+
+
+  _createClass(Router, [{
+    key: "update",
+    value: function update(route, mod) {
+      var Component = mod["default"] || mod;
+      var data = this.components[route];
+
+      if (!data) {
+        throw new Error("Cannot update unavailable route: ".concat(route));
+      }
+
+      var newData = Object.assign(Object.assign({}, data), {
+        Component: Component,
+        __N_SSG: mod.__N_SSG,
+        __N_SSP: mod.__N_SSP
+      });
+      this.components[route] = newData; // pages/_app.js updated
+
+      if (route === '/_app') {
+        this.notify(this.components[this.route]);
+        return;
+      }
+
+      if (route === this.route) {
+        this.notify(newData);
+      }
+    }
+  }, {
+    key: "reload",
+    value: function reload() {
+      window.location.reload();
+    }
+    /**
+     * Go back in history
+     */
+
+  }, {
+    key: "back",
+    value: function back() {
+      window.history.back();
+    }
+    /**
+     * Performs a `pushState` with arguments
+     * @param url of the route
+     * @param as masks `url` for the browser
+     * @param options object you can define `shallow` and other options
+     */
+
+  }, {
+    key: "push",
+    value: function push(url) {
+      var as = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : url;
+      var options = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
+      return this.change('pushState', url, as, options);
+    }
+    /**
+     * Performs a `replaceState` with arguments
+     * @param url of the route
+     * @param as masks `url` for the browser
+     * @param options object you can define `shallow` and other options
+     */
+
+  }, {
+    key: "replace",
+    value: function replace(url) {
+      var as = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : url;
+      var options = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
+      return this.change('replaceState', url, as, options);
+    }
+  }, {
+    key: "change",
+    value: function change(method, _url, _as, options) {
+      var _this2 = this;
+
+      return new Promise(function (resolve, reject) {
+        if (!options._h) {
+          _this2.isSsr = false;
+        } // marking route changes as a navigation start entry
+
+
+        if (utils_1.ST) {
+          performance.mark('routeChange');
+        } // If url and as provided as an object representation,
+        // we'll format them into the string version here.
+
+
+        var url = typeof _url === 'object' ? utils_1.formatWithValidation(_url) : _url;
+        var as = typeof _as === 'object' ? utils_1.formatWithValidation(_as) : _as; // Add the ending slash to the paths. So, we can serve the
+        // "<page>/index.html" directly for the SSR page.
+
+        if (false) { var rewriteUrlForNextExport; }
+
+        _this2.abortComponentLoad(as); // If the url change is only related to a hash change
+        // We should not proceed. We should only change the state.
+        // WARNING: `_h` is an internal option for handing Next.js client-side
+        // hydration. Your app should _never_ use this property. It may change at
+        // any time without notice.
+
+
+        if (!options._h && _this2.onlyAHashChange(as)) {
+          _this2.asPath = as;
+          Router.events.emit('hashChangeStart', as);
+
+          _this2.changeState(method, url, addBasePath(as), options);
+
+          _this2.scrollToHash(as);
+
+          Router.events.emit('hashChangeComplete', as);
+          return resolve(true);
+        }
+
+        var _url_1$parse2 = url_1.parse(url, true),
+            pathname = _url_1$parse2.pathname,
+            query = _url_1$parse2.query,
+            protocol = _url_1$parse2.protocol;
+
+        if (!pathname || protocol) {
+          if (true) {
+            throw new Error("Invalid href passed to router: ".concat(url, " https://err.sh/zeit/next.js/invalid-href-passed"));
+          }
+
+          return resolve(false);
+        } // If asked to change the current URL we should reload the current page
+        // (not location.reload() but reload getInitialProps and other Next.js stuffs)
+        // We also need to set the method = replaceState always
+        // as this should not go into the history (That's how browsers work)
+        // We should compare the new asPath to the current asPath, not the url
+
+
+        if (!_this2.urlIsNew(as)) {
+          method = 'replaceState';
+        }
+
+        var route = toRoute(pathname);
+        var _options$shallow = options.shallow,
+            shallow = _options$shallow === void 0 ? false : _options$shallow;
+
+        if (is_dynamic_1.isDynamicRoute(route)) {
+          var _url_1$parse3 = url_1.parse(as),
+              asPathname = _url_1$parse3.pathname;
+
+          var routeRegex = route_regex_1.getRouteRegex(route);
+          var routeMatch = route_matcher_1.getRouteMatcher(routeRegex)(asPathname);
+
+          if (!routeMatch) {
+            var missingParams = Object.keys(routeRegex.groups).filter(function (param) {
+              return !query[param];
+            });
+
+            if (missingParams.length > 0) {
+              if (true) {
+                console.warn("Mismatching `as` and `href` failed to manually provide " + "the params: ".concat(missingParams.join(', '), " in the `href`'s `query`"));
+              }
+
+              return reject(new Error("The provided `as` value (".concat(asPathname, ") is incompatible with the `href` value (").concat(route, "). ") + "Read more: https://err.sh/zeit/next.js/incompatible-href-as"));
+            }
+          } else {
+            // Merge params into `query`, overwriting any specified in search
+            Object.assign(query, routeMatch);
+          }
+        }
+
+        Router.events.emit('routeChangeStart', as); // If shallow is true and the route exists in the router cache we reuse the previous result
+
+        _this2.getRouteInfo(route, pathname, query, as, shallow).then(function (routeInfo) {
+          var error = routeInfo.error;
+
+          if (error && error.cancelled) {
+            return resolve(false);
+          }
+
+          Router.events.emit('beforeHistoryChange', as);
+
+          _this2.changeState(method, url, addBasePath(as), options);
+
+          if (true) {
+            var appComp = _this2.components['/_app'].Component;
+            window.next.isPrerendered = appComp.getInitialProps === appComp.origGetInitialProps && !routeInfo.Component.getInitialProps;
+          }
+
+          _this2.set(route, pathname, query, as, routeInfo);
+
+          if (error) {
+            Router.events.emit('routeChangeError', error, as);
+            throw error;
+          }
+
+          Router.events.emit('routeChangeComplete', as);
+          return resolve(true);
+        }, reject);
+      });
+    }
+  }, {
+    key: "changeState",
+    value: function changeState(method, url, as) {
+      var options = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : {};
+
+      if (true) {
+        if (typeof window.history === 'undefined') {
+          console.error("Warning: window.history is not available.");
+          return;
+        }
+
+        if (typeof window.history[method] === 'undefined') {
+          console.error("Warning: window.history.".concat(method, " is not available"));
+          return;
+        }
+      }
+
+      if (method !== 'pushState' || utils_1.getURL() !== as) {
+        window.history[method]({
+          url: url,
+          as: as,
+          options: options
+        }, // Most browsers currently ignores this parameter, although they may use it in the future.
+        // Passing the empty string here should be safe against future changes to the method.
+        // https://developer.mozilla.org/en-US/docs/Web/API/History/replaceState
+        '', as);
+      }
+    }
+  }, {
+    key: "getRouteInfo",
+    value: function getRouteInfo(route, pathname, query, as) {
+      var _this3 = this;
+
+      var shallow = arguments.length > 4 && arguments[4] !== undefined ? arguments[4] : false;
+      var cachedRouteInfo = this.components[route]; // If there is a shallow route transition possible
+      // If the route is already rendered on the screen.
+
+      if (shallow && cachedRouteInfo && this.route === route) {
+        return Promise.resolve(cachedRouteInfo);
+      }
+
+      var handleError = function handleError(err, loadErrorFail) {
+        return new Promise(function (resolve) {
+          if (err.code === 'PAGE_LOAD_ERROR' || loadErrorFail) {
+            // If we can't load the page it could be one of following reasons
+            //  1. Page doesn't exists
+            //  2. Page does exist in a different zone
+            //  3. Internal error while loading the page
+            // So, doing a hard reload is the proper way to deal with this.
+            window.location.href = as; // Changing the URL doesn't block executing the current code path.
+            // So, we need to mark it as a cancelled error and stop the routing logic.
+
+            err.cancelled = true; // @ts-ignore TODO: fix the control flow here
+
+            return resolve({
+              error: err
+            });
+          }
+
+          if (err.cancelled) {
+            // @ts-ignore TODO: fix the control flow here
+            return resolve({
+              error: err
+            });
+          }
+
+          resolve(_this3.fetchComponent('/_error').then(function (res) {
+            var Component = res.page;
+            var routeInfo = {
+              Component: Component,
+              err: err
+            };
+            return new Promise(function (resolve) {
+              _this3.getInitialProps(Component, {
+                err: err,
+                pathname: pathname,
+                query: query
+              }).then(function (props) {
+                routeInfo.props = props;
+                routeInfo.error = err;
+                resolve(routeInfo);
+              }, function (gipErr) {
+                console.error('Error in error page `getInitialProps`: ', gipErr);
+                routeInfo.error = err;
+                routeInfo.props = {};
+                resolve(routeInfo);
+              });
+            });
+          })["catch"](function (err) {
+            return handleError(err, true);
+          }));
+        });
+      };
+
+      return new Promise(function (resolve, reject) {
+        if (cachedRouteInfo) {
+          return resolve(cachedRouteInfo);
+        }
+
+        _this3.fetchComponent(route).then(function (res) {
+          return resolve({
+            Component: res.page,
+            __N_SSG: res.mod.__N_SSG,
+            __N_SSP: res.mod.__N_SSP
+          });
+        }, reject);
+      }).then(function (routeInfo) {
+        var Component = routeInfo.Component,
+            __N_SSG = routeInfo.__N_SSG,
+            __N_SSP = routeInfo.__N_SSP;
+
+        if (true) {
+          var _require = __webpack_require__(/*! react-is */ "./node_modules/react-is/index.js"),
+              isValidElementType = _require.isValidElementType;
+
+          if (!isValidElementType(Component)) {
+            throw new Error("The default export is not a React Component in page: \"".concat(pathname, "\""));
+          }
+        }
+
+        return _this3._getData(function () {
+          return __N_SSG ? _this3._getStaticData(as) : __N_SSP ? _this3._getServerData(as) : _this3.getInitialProps(Component, // we provide AppTree later so this needs to be `any`
+          {
+            pathname: pathname,
+            query: query,
+            asPath: as
+          });
+        }).then(function (props) {
+          routeInfo.props = props;
+          _this3.components[route] = routeInfo;
+          return routeInfo;
+        });
+      })["catch"](handleError);
+    }
+  }, {
+    key: "set",
+    value: function set(route, pathname, query, as, data) {
+      this.isFallback = false;
+      this.route = route;
+      this.pathname = pathname;
+      this.query = query;
+      this.asPath = as;
+      this.notify(data);
+    }
+    /**
+     * Callback to execute before replacing router state
+     * @param cb callback to be executed
+     */
+
+  }, {
+    key: "beforePopState",
+    value: function beforePopState(cb) {
+      this._bps = cb;
+    }
+  }, {
+    key: "onlyAHashChange",
+    value: function onlyAHashChange(as) {
+      if (!this.asPath) return false;
+
+      var _this$asPath$split = this.asPath.split('#'),
+          _this$asPath$split2 = _slicedToArray(_this$asPath$split, 2),
+          oldUrlNoHash = _this$asPath$split2[0],
+          oldHash = _this$asPath$split2[1];
+
+      var _as$split = as.split('#'),
+          _as$split2 = _slicedToArray(_as$split, 2),
+          newUrlNoHash = _as$split2[0],
+          newHash = _as$split2[1]; // Makes sure we scroll to the provided hash if the url/hash are the same
+
+
+      if (newHash && oldUrlNoHash === newUrlNoHash && oldHash === newHash) {
+        return true;
+      } // If the urls are change, there's more than a hash change
+
+
+      if (oldUrlNoHash !== newUrlNoHash) {
+        return false;
+      } // If the hash has changed, then it's a hash only change.
+      // This check is necessary to handle both the enter and
+      // leave hash === '' cases. The identity case falls through
+      // and is treated as a next reload.
+
+
+      return oldHash !== newHash;
+    }
+  }, {
+    key: "scrollToHash",
+    value: function scrollToHash(as) {
+      var _as$split3 = as.split('#'),
+          _as$split4 = _slicedToArray(_as$split3, 2),
+          hash = _as$split4[1]; // Scroll to top if the hash is just `#` with no value
+
+
+      if (hash === '') {
+        window.scrollTo(0, 0);
+        return;
+      } // First we check if the element by id is found
+
+
+      var idEl = document.getElementById(hash);
+
+      if (idEl) {
+        idEl.scrollIntoView();
+        return;
+      } // If there's no element with the id, we check the `name` property
+      // To mirror browsers
+
+
+      var nameEl = document.getElementsByName(hash)[0];
+
+      if (nameEl) {
+        nameEl.scrollIntoView();
+      }
+    }
+  }, {
+    key: "urlIsNew",
+    value: function urlIsNew(asPath) {
+      return this.asPath !== asPath;
+    }
+    /**
+     * Prefetch page code, you may wait for the data during page rendering.
+     * This feature only works in production!
+     * @param url the href of prefetched page
+     * @param asPath the as path of the prefetched page
+     */
+
+  }, {
+    key: "prefetch",
+    value: function prefetch(url) {
+      var _this4 = this;
+
+      var asPath = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : url;
+      var options = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
+      return new Promise(function (resolve, reject) {
+        var _url_1$parse4 = url_1.parse(url),
+            pathname = _url_1$parse4.pathname,
+            protocol = _url_1$parse4.protocol;
+
+        if (!pathname || protocol) {
+          if (true) {
+            throw new Error("Invalid href passed to router: ".concat(url, " https://err.sh/zeit/next.js/invalid-href-passed"));
+          }
+
+          return;
+        } // Prefetch is not supported in development mode because it would trigger on-demand-entries
+
+
+        if (true) {
+          return;
+        }
+
+        Promise.all([_this4.pageLoader.prefetchData(url, asPath), _this4.pageLoader[options.priority ? 'loadPage' : 'prefetch'](toRoute(pathname))]).then(function () {
+          return resolve();
+        }, reject);
+      });
+    }
+  }, {
+    key: "fetchComponent",
+    value: function fetchComponent(route) {
+      var cancelled, cancel, componentResult, error;
+      return _regeneratorRuntime.async(function fetchComponent$(_context) {
+        while (1) {
+          switch (_context.prev = _context.next) {
+            case 0:
+              cancelled = false;
+
+              cancel = this.clc = function () {
+                cancelled = true;
+              };
+
+              _context.next = 4;
+              return _regeneratorRuntime.awrap(this.pageLoader.loadPage(route));
+
+            case 4:
+              componentResult = _context.sent;
+
+              if (!cancelled) {
+                _context.next = 9;
+                break;
+              }
+
+              error = new Error("Abort fetching component for route: \"".concat(route, "\""));
+              error.cancelled = true;
+              throw error;
+
+            case 9:
+              if (cancel === this.clc) {
+                this.clc = null;
+              }
+
+              return _context.abrupt("return", componentResult);
+
+            case 11:
+            case "end":
+              return _context.stop();
+          }
+        }
+      }, null, this, null, Promise);
+    }
+  }, {
+    key: "_getData",
+    value: function _getData(fn) {
+      var _this5 = this;
+
+      var cancelled = false;
+
+      var cancel = function cancel() {
+        cancelled = true;
+      };
+
+      this.clc = cancel;
+      return fn().then(function (data) {
+        if (cancel === _this5.clc) {
+          _this5.clc = null;
+        }
+
+        if (cancelled) {
+          var err = new Error('Loading initial props cancelled');
+          err.cancelled = true;
+          throw err;
+        }
+
+        return data;
+      });
+    }
+  }, {
+    key: "getInitialProps",
+    value: function getInitialProps(Component, ctx) {
+      var App = this.components['/_app'].Component;
+
+      var AppTree = this._wrapApp(App);
+
+      ctx.AppTree = AppTree;
+      return utils_1.loadGetInitialProps(App, {
+        AppTree: AppTree,
+        Component: Component,
+        router: this,
+        ctx: ctx
+      });
+    }
+  }, {
+    key: "abortComponentLoad",
+    value: function abortComponentLoad(as) {
+      if (this.clc) {
+        var e = new Error('Route Cancelled');
+        e.cancelled = true;
+        Router.events.emit('routeChangeError', e, as);
+        this.clc();
+        this.clc = null;
+      }
+    }
+  }, {
+    key: "notify",
+    value: function notify(data) {
+      this.sub(data, this.components['/_app'].Component);
+    }
+  }], [{
+    key: "_rewriteUrlForNextExport",
+    value: function _rewriteUrlForNextExport(url) {
+      if (false) { var rewriteUrlForNextExport; } else {
+        return url;
+      }
+    }
+  }]);
+
+  return Router;
+}();
+
+exports["default"] = Router;
+Router.events = mitt_1["default"]();
+
+/***/ }),
+
+/***/ "./node_modules/next/dist/next-server/lib/router/utils/is-dynamic.js":
+/*!***************************************************************************!*\
+  !*** ./node_modules/next/dist/next-server/lib/router/utils/is-dynamic.js ***!
+  \***************************************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+}); // Identify /[param]/ in route string
+
+var TEST_ROUTE = /\/\[[^/]+?\](?=\/|$)/;
+
+function isDynamicRoute(route) {
+  return TEST_ROUTE.test(route);
+}
+
+exports.isDynamicRoute = isDynamicRoute;
+
+/***/ }),
+
+/***/ "./node_modules/next/dist/next-server/lib/router/utils/route-matcher.js":
+/*!******************************************************************************!*\
+  !*** ./node_modules/next/dist/next-server/lib/router/utils/route-matcher.js ***!
+  \******************************************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+function getRouteMatcher(routeRegex) {
+  var re = routeRegex.re,
+      groups = routeRegex.groups;
+  return function (pathname) {
+    var routeMatch = re.exec(pathname);
+
+    if (!routeMatch) {
+      return false;
+    }
+
+    var decode = decodeURIComponent;
+    var params = {};
+    Object.keys(groups).forEach(function (slugName) {
+      var g = groups[slugName];
+      var m = routeMatch[g.pos];
+
+      if (m !== undefined) {
+        params[slugName] = ~m.indexOf('/') ? m.split('/').map(function (entry) {
+          return decode(entry);
+        }) : g.repeat ? [decode(m)] : decode(m);
+      }
+    });
+    return params;
+  };
+}
+
+exports.getRouteMatcher = getRouteMatcher;
+
+/***/ }),
+
+/***/ "./node_modules/next/dist/next-server/lib/router/utils/route-regex.js":
+/*!****************************************************************************!*\
+  !*** ./node_modules/next/dist/next-server/lib/router/utils/route-regex.js ***!
+  \****************************************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+function getRouteRegex(normalizedRoute) {
+  // Escape all characters that could be considered RegEx
+  var escapedRoute = (normalizedRoute.replace(/\/$/, '') || '/').replace(/[|\\{}()[\]^$+*?.-]/g, '\\$&');
+  var groups = {};
+  var groupIndex = 1;
+  var parameterizedRoute = escapedRoute.replace(/\/\\\[([^/]+?)\\\](?=\/|$)/g, function (_, $1) {
+    var isCatchAll = /^(\\\.){3}/.test($1);
+    groups[$1 // Un-escape key
+    .replace(/\\([|\\{}()[\]^$+*?.-])/g, '$1').replace(/^\.{3}/, '') // eslint-disable-next-line no-sequences
+    ] = {
+      pos: groupIndex++,
+      repeat: isCatchAll
+    };
+    return isCatchAll ? '/(.+?)' : '/([^/]+?)';
+  });
+  return {
+    re: new RegExp('^' + parameterizedRoute + '(?:/)?$', 'i'),
+    groups: groups
+  };
+}
+
+exports.getRouteRegex = getRouteRegex;
+
+/***/ }),
+
 /***/ "./node_modules/next/dist/next-server/lib/side-effect.js":
 /*!***************************************************************!*\
   !*** ./node_modules/next/dist/next-server/lib/side-effect.js ***!
@@ -52335,6 +54014,201 @@ exports["default"] = function () {
 
 /***/ }),
 
+/***/ "./node_modules/next/dist/next-server/lib/utils.js":
+/*!*********************************************************!*\
+  !*** ./node_modules/next/dist/next-server/lib/utils.js ***!
+  \*********************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+var _regeneratorRuntime = __webpack_require__(/*! @babel/runtime/regenerator */ "./node_modules/next/node_modules/@babel/runtime/regenerator/index.js");
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var url_1 = __webpack_require__(/*! url */ "./node_modules/native-url/dist/index.js");
+/**
+ * Utils
+ */
+
+
+function execOnce(fn) {
+  var _this = this;
+
+  var used = false;
+  var result = null;
+  return function () {
+    if (!used) {
+      used = true;
+
+      for (var _len = arguments.length, args = new Array(_len), _key = 0; _key < _len; _key++) {
+        args[_key] = arguments[_key];
+      }
+
+      result = fn.apply(_this, args);
+    }
+
+    return result;
+  };
+}
+
+exports.execOnce = execOnce;
+
+function getLocationOrigin() {
+  var _window$location = window.location,
+      protocol = _window$location.protocol,
+      hostname = _window$location.hostname,
+      port = _window$location.port;
+  return "".concat(protocol, "//").concat(hostname).concat(port ? ':' + port : '');
+}
+
+exports.getLocationOrigin = getLocationOrigin;
+
+function getURL() {
+  var href = window.location.href;
+  var origin = getLocationOrigin();
+  return href.substring(origin.length);
+}
+
+exports.getURL = getURL;
+
+function getDisplayName(Component) {
+  return typeof Component === 'string' ? Component : Component.displayName || Component.name || 'Unknown';
+}
+
+exports.getDisplayName = getDisplayName;
+
+function isResSent(res) {
+  return res.finished || res.headersSent;
+}
+
+exports.isResSent = isResSent;
+
+function loadGetInitialProps(App, ctx) {
+  var _a, message, res, props, _message;
+
+  return _regeneratorRuntime.async(function loadGetInitialProps$(_context) {
+    while (1) {
+      switch (_context.prev = _context.next) {
+        case 0:
+          if (false) {}
+
+          if (!((_a = App.prototype) === null || _a === void 0 ? void 0 : _a.getInitialProps)) {
+            _context.next = 4;
+            break;
+          }
+
+          message = "\"".concat(getDisplayName(App), ".getInitialProps()\" is defined as an instance method - visit https://err.sh/zeit/next.js/get-initial-props-as-an-instance-method for more information.");
+          throw new Error(message);
+
+        case 4:
+          // when called from _app `ctx` is nested in `ctx`
+          res = ctx.res || ctx.ctx && ctx.ctx.res;
+
+          if (App.getInitialProps) {
+            _context.next = 12;
+            break;
+          }
+
+          if (!(ctx.ctx && ctx.Component)) {
+            _context.next = 11;
+            break;
+          }
+
+          _context.next = 9;
+          return _regeneratorRuntime.awrap(loadGetInitialProps(ctx.Component, ctx.ctx));
+
+        case 9:
+          _context.t0 = _context.sent;
+          return _context.abrupt("return", {
+            pageProps: _context.t0
+          });
+
+        case 11:
+          return _context.abrupt("return", {});
+
+        case 12:
+          _context.next = 14;
+          return _regeneratorRuntime.awrap(App.getInitialProps(ctx));
+
+        case 14:
+          props = _context.sent;
+
+          if (!(res && isResSent(res))) {
+            _context.next = 17;
+            break;
+          }
+
+          return _context.abrupt("return", props);
+
+        case 17:
+          if (props) {
+            _context.next = 20;
+            break;
+          }
+
+          _message = "\"".concat(getDisplayName(App), ".getInitialProps()\" should resolve to an object. But found \"").concat(props, "\" instead.");
+          throw new Error(_message);
+
+        case 20:
+          if (true) {
+            if (Object.keys(props).length === 0 && !ctx.ctx) {
+              console.warn("".concat(getDisplayName(App), " returned an empty object from `getInitialProps`. This de-optimizes and prevents automatic static optimization. https://err.sh/zeit/next.js/empty-object-getInitialProps"));
+            }
+          }
+
+          return _context.abrupt("return", props);
+
+        case 22:
+        case "end":
+          return _context.stop();
+      }
+    }
+  }, null, null, null, Promise);
+}
+
+exports.loadGetInitialProps = loadGetInitialProps;
+exports.urlObjectKeys = ['auth', 'hash', 'host', 'hostname', 'href', 'path', 'pathname', 'port', 'protocol', 'query', 'search', 'slashes'];
+
+function formatWithValidation(url, options) {
+  if (true) {
+    if (url !== null && typeof url === 'object') {
+      Object.keys(url).forEach(function (key) {
+        if (exports.urlObjectKeys.indexOf(key) === -1) {
+          console.warn("Unknown key passed via urlObject into url.format: ".concat(key));
+        }
+      });
+    }
+  }
+
+  return url_1.format(url, options);
+}
+
+exports.formatWithValidation = formatWithValidation;
+exports.SP = typeof performance !== 'undefined';
+exports.ST = exports.SP && typeof performance.mark === 'function' && typeof performance.measure === 'function';
+
+/***/ }),
+
+/***/ "./node_modules/next/node_modules/@babel/runtime/helpers/arrayWithHoles.js":
+/*!*********************************************************************************!*\
+  !*** ./node_modules/next/node_modules/@babel/runtime/helpers/arrayWithHoles.js ***!
+  \*********************************************************************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+function _arrayWithHoles(arr) {
+  if (Array.isArray(arr)) return arr;
+}
+
+module.exports = _arrayWithHoles;
+
+/***/ }),
+
 /***/ "./node_modules/next/node_modules/@babel/runtime/helpers/arrayWithoutHoles.js":
 /*!************************************************************************************!*\
   !*** ./node_modules/next/node_modules/@babel/runtime/helpers/arrayWithoutHoles.js ***!
@@ -52389,6 +54263,49 @@ function _classCallCheck(instance, Constructor) {
 }
 
 module.exports = _classCallCheck;
+
+/***/ }),
+
+/***/ "./node_modules/next/node_modules/@babel/runtime/helpers/construct.js":
+/*!****************************************************************************!*\
+  !*** ./node_modules/next/node_modules/@babel/runtime/helpers/construct.js ***!
+  \****************************************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+var setPrototypeOf = __webpack_require__(/*! ./setPrototypeOf */ "./node_modules/next/node_modules/@babel/runtime/helpers/setPrototypeOf.js");
+
+function isNativeReflectConstruct() {
+  if (typeof Reflect === "undefined" || !Reflect.construct) return false;
+  if (Reflect.construct.sham) return false;
+  if (typeof Proxy === "function") return true;
+
+  try {
+    Date.prototype.toString.call(Reflect.construct(Date, [], function () {}));
+    return true;
+  } catch (e) {
+    return false;
+  }
+}
+
+function _construct(Parent, args, Class) {
+  if (isNativeReflectConstruct()) {
+    module.exports = _construct = Reflect.construct;
+  } else {
+    module.exports = _construct = function _construct(Parent, args, Class) {
+      var a = [null];
+      a.push.apply(a, args);
+      var Constructor = Function.bind.apply(Parent, a);
+      var instance = new Constructor();
+      if (Class) setPrototypeOf(instance, Class.prototype);
+      return instance;
+    };
+  }
+
+  return _construct.apply(null, arguments);
+}
+
+module.exports = _construct;
 
 /***/ }),
 
@@ -52465,6 +54382,88 @@ module.exports = _inherits;
 
 /***/ }),
 
+/***/ "./node_modules/next/node_modules/@babel/runtime/helpers/interopRequireDefault.js":
+/*!****************************************************************************************!*\
+  !*** ./node_modules/next/node_modules/@babel/runtime/helpers/interopRequireDefault.js ***!
+  \****************************************************************************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+function _interopRequireDefault(obj) {
+  return obj && obj.__esModule ? obj : {
+    "default": obj
+  };
+}
+
+module.exports = _interopRequireDefault;
+
+/***/ }),
+
+/***/ "./node_modules/next/node_modules/@babel/runtime/helpers/interopRequireWildcard.js":
+/*!*****************************************************************************************!*\
+  !*** ./node_modules/next/node_modules/@babel/runtime/helpers/interopRequireWildcard.js ***!
+  \*****************************************************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+var _typeof = __webpack_require__(/*! ../helpers/typeof */ "./node_modules/next/node_modules/@babel/runtime/helpers/typeof.js");
+
+function _getRequireWildcardCache() {
+  if (typeof WeakMap !== "function") return null;
+  var cache = new WeakMap();
+
+  _getRequireWildcardCache = function _getRequireWildcardCache() {
+    return cache;
+  };
+
+  return cache;
+}
+
+function _interopRequireWildcard(obj) {
+  if (obj && obj.__esModule) {
+    return obj;
+  }
+
+  if (obj === null || _typeof(obj) !== "object" && typeof obj !== "function") {
+    return {
+      "default": obj
+    };
+  }
+
+  var cache = _getRequireWildcardCache();
+
+  if (cache && cache.has(obj)) {
+    return cache.get(obj);
+  }
+
+  var newObj = {};
+  var hasPropertyDescriptor = Object.defineProperty && Object.getOwnPropertyDescriptor;
+
+  for (var key in obj) {
+    if (Object.prototype.hasOwnProperty.call(obj, key)) {
+      var desc = hasPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : null;
+
+      if (desc && (desc.get || desc.set)) {
+        Object.defineProperty(newObj, key, desc);
+      } else {
+        newObj[key] = obj[key];
+      }
+    }
+  }
+
+  newObj["default"] = obj;
+
+  if (cache) {
+    cache.set(obj, newObj);
+  }
+
+  return newObj;
+}
+
+module.exports = _interopRequireWildcard;
+
+/***/ }),
+
 /***/ "./node_modules/next/node_modules/@babel/runtime/helpers/iterableToArray.js":
 /*!**********************************************************************************!*\
   !*** ./node_modules/next/node_modules/@babel/runtime/helpers/iterableToArray.js ***!
@@ -52477,6 +54476,62 @@ function _iterableToArray(iter) {
 }
 
 module.exports = _iterableToArray;
+
+/***/ }),
+
+/***/ "./node_modules/next/node_modules/@babel/runtime/helpers/iterableToArrayLimit.js":
+/*!***************************************************************************************!*\
+  !*** ./node_modules/next/node_modules/@babel/runtime/helpers/iterableToArrayLimit.js ***!
+  \***************************************************************************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+function _iterableToArrayLimit(arr, i) {
+  if (!(Symbol.iterator in Object(arr) || Object.prototype.toString.call(arr) === "[object Arguments]")) {
+    return;
+  }
+
+  var _arr = [];
+  var _n = true;
+  var _d = false;
+  var _e = undefined;
+
+  try {
+    for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) {
+      _arr.push(_s.value);
+
+      if (i && _arr.length === i) break;
+    }
+  } catch (err) {
+    _d = true;
+    _e = err;
+  } finally {
+    try {
+      if (!_n && _i["return"] != null) _i["return"]();
+    } finally {
+      if (_d) throw _e;
+    }
+  }
+
+  return _arr;
+}
+
+module.exports = _iterableToArrayLimit;
+
+/***/ }),
+
+/***/ "./node_modules/next/node_modules/@babel/runtime/helpers/nonIterableRest.js":
+/*!**********************************************************************************!*\
+  !*** ./node_modules/next/node_modules/@babel/runtime/helpers/nonIterableRest.js ***!
+  \**********************************************************************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+function _nonIterableRest() {
+  throw new TypeError("Invalid attempt to destructure non-iterable instance");
+}
+
+module.exports = _nonIterableRest;
 
 /***/ }),
 
@@ -52538,6 +54593,27 @@ module.exports = _setPrototypeOf;
 
 /***/ }),
 
+/***/ "./node_modules/next/node_modules/@babel/runtime/helpers/slicedToArray.js":
+/*!********************************************************************************!*\
+  !*** ./node_modules/next/node_modules/@babel/runtime/helpers/slicedToArray.js ***!
+  \********************************************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+var arrayWithHoles = __webpack_require__(/*! ./arrayWithHoles */ "./node_modules/next/node_modules/@babel/runtime/helpers/arrayWithHoles.js");
+
+var iterableToArrayLimit = __webpack_require__(/*! ./iterableToArrayLimit */ "./node_modules/next/node_modules/@babel/runtime/helpers/iterableToArrayLimit.js");
+
+var nonIterableRest = __webpack_require__(/*! ./nonIterableRest */ "./node_modules/next/node_modules/@babel/runtime/helpers/nonIterableRest.js");
+
+function _slicedToArray(arr, i) {
+  return arrayWithHoles(arr) || iterableToArrayLimit(arr, i) || nonIterableRest();
+}
+
+module.exports = _slicedToArray;
+
+/***/ }),
+
 /***/ "./node_modules/next/node_modules/@babel/runtime/helpers/toConsumableArray.js":
 /*!************************************************************************************!*\
   !*** ./node_modules/next/node_modules/@babel/runtime/helpers/toConsumableArray.js ***!
@@ -52583,6 +54659,755 @@ function _typeof(obj) {
 }
 
 module.exports = _typeof;
+
+/***/ }),
+
+/***/ "./node_modules/next/node_modules/@babel/runtime/regenerator/index.js":
+/*!****************************************************************************!*\
+  !*** ./node_modules/next/node_modules/@babel/runtime/regenerator/index.js ***!
+  \****************************************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+module.exports = __webpack_require__(/*! regenerator-runtime */ "./node_modules/next/node_modules/regenerator-runtime/runtime.js");
+
+
+/***/ }),
+
+/***/ "./node_modules/next/node_modules/regenerator-runtime/runtime.js":
+/*!***********************************************************************!*\
+  !*** ./node_modules/next/node_modules/regenerator-runtime/runtime.js ***!
+  \***********************************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+/**
+ * Copyright (c) 2014-present, Facebook, Inc.
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
+ */
+
+var runtime = (function (exports) {
+  "use strict";
+
+  var Op = Object.prototype;
+  var hasOwn = Op.hasOwnProperty;
+  var undefined; // More compressible than void 0.
+  var $Symbol = typeof Symbol === "function" ? Symbol : {};
+  var iteratorSymbol = $Symbol.iterator || "@@iterator";
+  var asyncIteratorSymbol = $Symbol.asyncIterator || "@@asyncIterator";
+  var toStringTagSymbol = $Symbol.toStringTag || "@@toStringTag";
+
+  function wrap(innerFn, outerFn, self, tryLocsList) {
+    // If outerFn provided and outerFn.prototype is a Generator, then outerFn.prototype instanceof Generator.
+    var protoGenerator = outerFn && outerFn.prototype instanceof Generator ? outerFn : Generator;
+    var generator = Object.create(protoGenerator.prototype);
+    var context = new Context(tryLocsList || []);
+
+    // The ._invoke method unifies the implementations of the .next,
+    // .throw, and .return methods.
+    generator._invoke = makeInvokeMethod(innerFn, self, context);
+
+    return generator;
+  }
+  exports.wrap = wrap;
+
+  // Try/catch helper to minimize deoptimizations. Returns a completion
+  // record like context.tryEntries[i].completion. This interface could
+  // have been (and was previously) designed to take a closure to be
+  // invoked without arguments, but in all the cases we care about we
+  // already have an existing method we want to call, so there's no need
+  // to create a new function object. We can even get away with assuming
+  // the method takes exactly one argument, since that happens to be true
+  // in every case, so we don't have to touch the arguments object. The
+  // only additional allocation required is the completion record, which
+  // has a stable shape and so hopefully should be cheap to allocate.
+  function tryCatch(fn, obj, arg) {
+    try {
+      return { type: "normal", arg: fn.call(obj, arg) };
+    } catch (err) {
+      return { type: "throw", arg: err };
+    }
+  }
+
+  var GenStateSuspendedStart = "suspendedStart";
+  var GenStateSuspendedYield = "suspendedYield";
+  var GenStateExecuting = "executing";
+  var GenStateCompleted = "completed";
+
+  // Returning this object from the innerFn has the same effect as
+  // breaking out of the dispatch switch statement.
+  var ContinueSentinel = {};
+
+  // Dummy constructor functions that we use as the .constructor and
+  // .constructor.prototype properties for functions that return Generator
+  // objects. For full spec compliance, you may wish to configure your
+  // minifier not to mangle the names of these two functions.
+  function Generator() {}
+  function GeneratorFunction() {}
+  function GeneratorFunctionPrototype() {}
+
+  // This is a polyfill for %IteratorPrototype% for environments that
+  // don't natively support it.
+  var IteratorPrototype = {};
+  IteratorPrototype[iteratorSymbol] = function () {
+    return this;
+  };
+
+  var getProto = Object.getPrototypeOf;
+  var NativeIteratorPrototype = getProto && getProto(getProto(values([])));
+  if (NativeIteratorPrototype &&
+      NativeIteratorPrototype !== Op &&
+      hasOwn.call(NativeIteratorPrototype, iteratorSymbol)) {
+    // This environment has a native %IteratorPrototype%; use it instead
+    // of the polyfill.
+    IteratorPrototype = NativeIteratorPrototype;
+  }
+
+  var Gp = GeneratorFunctionPrototype.prototype =
+    Generator.prototype = Object.create(IteratorPrototype);
+  GeneratorFunction.prototype = Gp.constructor = GeneratorFunctionPrototype;
+  GeneratorFunctionPrototype.constructor = GeneratorFunction;
+  GeneratorFunctionPrototype[toStringTagSymbol] =
+    GeneratorFunction.displayName = "GeneratorFunction";
+
+  // Helper for defining the .next, .throw, and .return methods of the
+  // Iterator interface in terms of a single ._invoke method.
+  function defineIteratorMethods(prototype) {
+    ["next", "throw", "return"].forEach(function(method) {
+      prototype[method] = function(arg) {
+        return this._invoke(method, arg);
+      };
+    });
+  }
+
+  exports.isGeneratorFunction = function(genFun) {
+    var ctor = typeof genFun === "function" && genFun.constructor;
+    return ctor
+      ? ctor === GeneratorFunction ||
+        // For the native GeneratorFunction constructor, the best we can
+        // do is to check its .name property.
+        (ctor.displayName || ctor.name) === "GeneratorFunction"
+      : false;
+  };
+
+  exports.mark = function(genFun) {
+    if (Object.setPrototypeOf) {
+      Object.setPrototypeOf(genFun, GeneratorFunctionPrototype);
+    } else {
+      genFun.__proto__ = GeneratorFunctionPrototype;
+      if (!(toStringTagSymbol in genFun)) {
+        genFun[toStringTagSymbol] = "GeneratorFunction";
+      }
+    }
+    genFun.prototype = Object.create(Gp);
+    return genFun;
+  };
+
+  // Within the body of any async function, `await x` is transformed to
+  // `yield regeneratorRuntime.awrap(x)`, so that the runtime can test
+  // `hasOwn.call(value, "__await")` to determine if the yielded value is
+  // meant to be awaited.
+  exports.awrap = function(arg) {
+    return { __await: arg };
+  };
+
+  function AsyncIterator(generator) {
+    function invoke(method, arg, resolve, reject) {
+      var record = tryCatch(generator[method], generator, arg);
+      if (record.type === "throw") {
+        reject(record.arg);
+      } else {
+        var result = record.arg;
+        var value = result.value;
+        if (value &&
+            typeof value === "object" &&
+            hasOwn.call(value, "__await")) {
+          return Promise.resolve(value.__await).then(function(value) {
+            invoke("next", value, resolve, reject);
+          }, function(err) {
+            invoke("throw", err, resolve, reject);
+          });
+        }
+
+        return Promise.resolve(value).then(function(unwrapped) {
+          // When a yielded Promise is resolved, its final value becomes
+          // the .value of the Promise<{value,done}> result for the
+          // current iteration.
+          result.value = unwrapped;
+          resolve(result);
+        }, function(error) {
+          // If a rejected Promise was yielded, throw the rejection back
+          // into the async generator function so it can be handled there.
+          return invoke("throw", error, resolve, reject);
+        });
+      }
+    }
+
+    var previousPromise;
+
+    function enqueue(method, arg) {
+      function callInvokeWithMethodAndArg() {
+        return new Promise(function(resolve, reject) {
+          invoke(method, arg, resolve, reject);
+        });
+      }
+
+      return previousPromise =
+        // If enqueue has been called before, then we want to wait until
+        // all previous Promises have been resolved before calling invoke,
+        // so that results are always delivered in the correct order. If
+        // enqueue has not been called before, then it is important to
+        // call invoke immediately, without waiting on a callback to fire,
+        // so that the async generator function has the opportunity to do
+        // any necessary setup in a predictable way. This predictability
+        // is why the Promise constructor synchronously invokes its
+        // executor callback, and why async functions synchronously
+        // execute code before the first await. Since we implement simple
+        // async functions in terms of async generators, it is especially
+        // important to get this right, even though it requires care.
+        previousPromise ? previousPromise.then(
+          callInvokeWithMethodAndArg,
+          // Avoid propagating failures to Promises returned by later
+          // invocations of the iterator.
+          callInvokeWithMethodAndArg
+        ) : callInvokeWithMethodAndArg();
+    }
+
+    // Define the unified helper method that is used to implement .next,
+    // .throw, and .return (see defineIteratorMethods).
+    this._invoke = enqueue;
+  }
+
+  defineIteratorMethods(AsyncIterator.prototype);
+  AsyncIterator.prototype[asyncIteratorSymbol] = function () {
+    return this;
+  };
+  exports.AsyncIterator = AsyncIterator;
+
+  // Note that simple async functions are implemented on top of
+  // AsyncIterator objects; they just return a Promise for the value of
+  // the final result produced by the iterator.
+  exports.async = function(innerFn, outerFn, self, tryLocsList) {
+    var iter = new AsyncIterator(
+      wrap(innerFn, outerFn, self, tryLocsList)
+    );
+
+    return exports.isGeneratorFunction(outerFn)
+      ? iter // If outerFn is a generator, return the full iterator.
+      : iter.next().then(function(result) {
+          return result.done ? result.value : iter.next();
+        });
+  };
+
+  function makeInvokeMethod(innerFn, self, context) {
+    var state = GenStateSuspendedStart;
+
+    return function invoke(method, arg) {
+      if (state === GenStateExecuting) {
+        throw new Error("Generator is already running");
+      }
+
+      if (state === GenStateCompleted) {
+        if (method === "throw") {
+          throw arg;
+        }
+
+        // Be forgiving, per 25.3.3.3.3 of the spec:
+        // https://people.mozilla.org/~jorendorff/es6-draft.html#sec-generatorresume
+        return doneResult();
+      }
+
+      context.method = method;
+      context.arg = arg;
+
+      while (true) {
+        var delegate = context.delegate;
+        if (delegate) {
+          var delegateResult = maybeInvokeDelegate(delegate, context);
+          if (delegateResult) {
+            if (delegateResult === ContinueSentinel) continue;
+            return delegateResult;
+          }
+        }
+
+        if (context.method === "next") {
+          // Setting context._sent for legacy support of Babel's
+          // function.sent implementation.
+          context.sent = context._sent = context.arg;
+
+        } else if (context.method === "throw") {
+          if (state === GenStateSuspendedStart) {
+            state = GenStateCompleted;
+            throw context.arg;
+          }
+
+          context.dispatchException(context.arg);
+
+        } else if (context.method === "return") {
+          context.abrupt("return", context.arg);
+        }
+
+        state = GenStateExecuting;
+
+        var record = tryCatch(innerFn, self, context);
+        if (record.type === "normal") {
+          // If an exception is thrown from innerFn, we leave state ===
+          // GenStateExecuting and loop back for another invocation.
+          state = context.done
+            ? GenStateCompleted
+            : GenStateSuspendedYield;
+
+          if (record.arg === ContinueSentinel) {
+            continue;
+          }
+
+          return {
+            value: record.arg,
+            done: context.done
+          };
+
+        } else if (record.type === "throw") {
+          state = GenStateCompleted;
+          // Dispatch the exception by looping back around to the
+          // context.dispatchException(context.arg) call above.
+          context.method = "throw";
+          context.arg = record.arg;
+        }
+      }
+    };
+  }
+
+  // Call delegate.iterator[context.method](context.arg) and handle the
+  // result, either by returning a { value, done } result from the
+  // delegate iterator, or by modifying context.method and context.arg,
+  // setting context.delegate to null, and returning the ContinueSentinel.
+  function maybeInvokeDelegate(delegate, context) {
+    var method = delegate.iterator[context.method];
+    if (method === undefined) {
+      // A .throw or .return when the delegate iterator has no .throw
+      // method always terminates the yield* loop.
+      context.delegate = null;
+
+      if (context.method === "throw") {
+        // Note: ["return"] must be used for ES3 parsing compatibility.
+        if (delegate.iterator["return"]) {
+          // If the delegate iterator has a return method, give it a
+          // chance to clean up.
+          context.method = "return";
+          context.arg = undefined;
+          maybeInvokeDelegate(delegate, context);
+
+          if (context.method === "throw") {
+            // If maybeInvokeDelegate(context) changed context.method from
+            // "return" to "throw", let that override the TypeError below.
+            return ContinueSentinel;
+          }
+        }
+
+        context.method = "throw";
+        context.arg = new TypeError(
+          "The iterator does not provide a 'throw' method");
+      }
+
+      return ContinueSentinel;
+    }
+
+    var record = tryCatch(method, delegate.iterator, context.arg);
+
+    if (record.type === "throw") {
+      context.method = "throw";
+      context.arg = record.arg;
+      context.delegate = null;
+      return ContinueSentinel;
+    }
+
+    var info = record.arg;
+
+    if (! info) {
+      context.method = "throw";
+      context.arg = new TypeError("iterator result is not an object");
+      context.delegate = null;
+      return ContinueSentinel;
+    }
+
+    if (info.done) {
+      // Assign the result of the finished delegate to the temporary
+      // variable specified by delegate.resultName (see delegateYield).
+      context[delegate.resultName] = info.value;
+
+      // Resume execution at the desired location (see delegateYield).
+      context.next = delegate.nextLoc;
+
+      // If context.method was "throw" but the delegate handled the
+      // exception, let the outer generator proceed normally. If
+      // context.method was "next", forget context.arg since it has been
+      // "consumed" by the delegate iterator. If context.method was
+      // "return", allow the original .return call to continue in the
+      // outer generator.
+      if (context.method !== "return") {
+        context.method = "next";
+        context.arg = undefined;
+      }
+
+    } else {
+      // Re-yield the result returned by the delegate method.
+      return info;
+    }
+
+    // The delegate iterator is finished, so forget it and continue with
+    // the outer generator.
+    context.delegate = null;
+    return ContinueSentinel;
+  }
+
+  // Define Generator.prototype.{next,throw,return} in terms of the
+  // unified ._invoke helper method.
+  defineIteratorMethods(Gp);
+
+  Gp[toStringTagSymbol] = "Generator";
+
+  // A Generator should always return itself as the iterator object when the
+  // @@iterator function is called on it. Some browsers' implementations of the
+  // iterator prototype chain incorrectly implement this, causing the Generator
+  // object to not be returned from this call. This ensures that doesn't happen.
+  // See https://github.com/facebook/regenerator/issues/274 for more details.
+  Gp[iteratorSymbol] = function() {
+    return this;
+  };
+
+  Gp.toString = function() {
+    return "[object Generator]";
+  };
+
+  function pushTryEntry(locs) {
+    var entry = { tryLoc: locs[0] };
+
+    if (1 in locs) {
+      entry.catchLoc = locs[1];
+    }
+
+    if (2 in locs) {
+      entry.finallyLoc = locs[2];
+      entry.afterLoc = locs[3];
+    }
+
+    this.tryEntries.push(entry);
+  }
+
+  function resetTryEntry(entry) {
+    var record = entry.completion || {};
+    record.type = "normal";
+    delete record.arg;
+    entry.completion = record;
+  }
+
+  function Context(tryLocsList) {
+    // The root entry object (effectively a try statement without a catch
+    // or a finally block) gives us a place to store values thrown from
+    // locations where there is no enclosing try statement.
+    this.tryEntries = [{ tryLoc: "root" }];
+    tryLocsList.forEach(pushTryEntry, this);
+    this.reset(true);
+  }
+
+  exports.keys = function(object) {
+    var keys = [];
+    for (var key in object) {
+      keys.push(key);
+    }
+    keys.reverse();
+
+    // Rather than returning an object with a next method, we keep
+    // things simple and return the next function itself.
+    return function next() {
+      while (keys.length) {
+        var key = keys.pop();
+        if (key in object) {
+          next.value = key;
+          next.done = false;
+          return next;
+        }
+      }
+
+      // To avoid creating an additional object, we just hang the .value
+      // and .done properties off the next function object itself. This
+      // also ensures that the minifier will not anonymize the function.
+      next.done = true;
+      return next;
+    };
+  };
+
+  function values(iterable) {
+    if (iterable) {
+      var iteratorMethod = iterable[iteratorSymbol];
+      if (iteratorMethod) {
+        return iteratorMethod.call(iterable);
+      }
+
+      if (typeof iterable.next === "function") {
+        return iterable;
+      }
+
+      if (!isNaN(iterable.length)) {
+        var i = -1, next = function next() {
+          while (++i < iterable.length) {
+            if (hasOwn.call(iterable, i)) {
+              next.value = iterable[i];
+              next.done = false;
+              return next;
+            }
+          }
+
+          next.value = undefined;
+          next.done = true;
+
+          return next;
+        };
+
+        return next.next = next;
+      }
+    }
+
+    // Return an iterator with no values.
+    return { next: doneResult };
+  }
+  exports.values = values;
+
+  function doneResult() {
+    return { value: undefined, done: true };
+  }
+
+  Context.prototype = {
+    constructor: Context,
+
+    reset: function(skipTempReset) {
+      this.prev = 0;
+      this.next = 0;
+      // Resetting context._sent for legacy support of Babel's
+      // function.sent implementation.
+      this.sent = this._sent = undefined;
+      this.done = false;
+      this.delegate = null;
+
+      this.method = "next";
+      this.arg = undefined;
+
+      this.tryEntries.forEach(resetTryEntry);
+
+      if (!skipTempReset) {
+        for (var name in this) {
+          // Not sure about the optimal order of these conditions:
+          if (name.charAt(0) === "t" &&
+              hasOwn.call(this, name) &&
+              !isNaN(+name.slice(1))) {
+            this[name] = undefined;
+          }
+        }
+      }
+    },
+
+    stop: function() {
+      this.done = true;
+
+      var rootEntry = this.tryEntries[0];
+      var rootRecord = rootEntry.completion;
+      if (rootRecord.type === "throw") {
+        throw rootRecord.arg;
+      }
+
+      return this.rval;
+    },
+
+    dispatchException: function(exception) {
+      if (this.done) {
+        throw exception;
+      }
+
+      var context = this;
+      function handle(loc, caught) {
+        record.type = "throw";
+        record.arg = exception;
+        context.next = loc;
+
+        if (caught) {
+          // If the dispatched exception was caught by a catch block,
+          // then let that catch block handle the exception normally.
+          context.method = "next";
+          context.arg = undefined;
+        }
+
+        return !! caught;
+      }
+
+      for (var i = this.tryEntries.length - 1; i >= 0; --i) {
+        var entry = this.tryEntries[i];
+        var record = entry.completion;
+
+        if (entry.tryLoc === "root") {
+          // Exception thrown outside of any try block that could handle
+          // it, so set the completion value of the entire function to
+          // throw the exception.
+          return handle("end");
+        }
+
+        if (entry.tryLoc <= this.prev) {
+          var hasCatch = hasOwn.call(entry, "catchLoc");
+          var hasFinally = hasOwn.call(entry, "finallyLoc");
+
+          if (hasCatch && hasFinally) {
+            if (this.prev < entry.catchLoc) {
+              return handle(entry.catchLoc, true);
+            } else if (this.prev < entry.finallyLoc) {
+              return handle(entry.finallyLoc);
+            }
+
+          } else if (hasCatch) {
+            if (this.prev < entry.catchLoc) {
+              return handle(entry.catchLoc, true);
+            }
+
+          } else if (hasFinally) {
+            if (this.prev < entry.finallyLoc) {
+              return handle(entry.finallyLoc);
+            }
+
+          } else {
+            throw new Error("try statement without catch or finally");
+          }
+        }
+      }
+    },
+
+    abrupt: function(type, arg) {
+      for (var i = this.tryEntries.length - 1; i >= 0; --i) {
+        var entry = this.tryEntries[i];
+        if (entry.tryLoc <= this.prev &&
+            hasOwn.call(entry, "finallyLoc") &&
+            this.prev < entry.finallyLoc) {
+          var finallyEntry = entry;
+          break;
+        }
+      }
+
+      if (finallyEntry &&
+          (type === "break" ||
+           type === "continue") &&
+          finallyEntry.tryLoc <= arg &&
+          arg <= finallyEntry.finallyLoc) {
+        // Ignore the finally entry if control is not jumping to a
+        // location outside the try/catch block.
+        finallyEntry = null;
+      }
+
+      var record = finallyEntry ? finallyEntry.completion : {};
+      record.type = type;
+      record.arg = arg;
+
+      if (finallyEntry) {
+        this.method = "next";
+        this.next = finallyEntry.finallyLoc;
+        return ContinueSentinel;
+      }
+
+      return this.complete(record);
+    },
+
+    complete: function(record, afterLoc) {
+      if (record.type === "throw") {
+        throw record.arg;
+      }
+
+      if (record.type === "break" ||
+          record.type === "continue") {
+        this.next = record.arg;
+      } else if (record.type === "return") {
+        this.rval = this.arg = record.arg;
+        this.method = "return";
+        this.next = "end";
+      } else if (record.type === "normal" && afterLoc) {
+        this.next = afterLoc;
+      }
+
+      return ContinueSentinel;
+    },
+
+    finish: function(finallyLoc) {
+      for (var i = this.tryEntries.length - 1; i >= 0; --i) {
+        var entry = this.tryEntries[i];
+        if (entry.finallyLoc === finallyLoc) {
+          this.complete(entry.completion, entry.afterLoc);
+          resetTryEntry(entry);
+          return ContinueSentinel;
+        }
+      }
+    },
+
+    "catch": function(tryLoc) {
+      for (var i = this.tryEntries.length - 1; i >= 0; --i) {
+        var entry = this.tryEntries[i];
+        if (entry.tryLoc === tryLoc) {
+          var record = entry.completion;
+          if (record.type === "throw") {
+            var thrown = record.arg;
+            resetTryEntry(entry);
+          }
+          return thrown;
+        }
+      }
+
+      // The context.catch method must only be called with a location
+      // argument that corresponds to a known catch block.
+      throw new Error("illegal catch attempt");
+    },
+
+    delegateYield: function(iterable, resultName, nextLoc) {
+      this.delegate = {
+        iterator: values(iterable),
+        resultName: resultName,
+        nextLoc: nextLoc
+      };
+
+      if (this.method === "next") {
+        // Deliberately forget the last sent value so that we don't
+        // accidentally pass it on to the delegate.
+        this.arg = undefined;
+      }
+
+      return ContinueSentinel;
+    }
+  };
+
+  // Regardless of whether this script is executing as a CommonJS module
+  // or not, return the runtime object so that we can declare the variable
+  // regeneratorRuntime in the outer scope, which allows this module to be
+  // injected easily by `bin/regenerator --include-runtime script.js`.
+  return exports;
+
+}(
+  // If this script is executing as a CommonJS module, use module.exports
+  // as the regeneratorRuntime namespace. Otherwise create a new empty
+  // object. Either way, the resulting object will be used to initialize
+  // the regeneratorRuntime variable at the top of this file.
+   true ? module.exports : undefined
+));
+
+try {
+  regeneratorRuntime = runtime;
+} catch (accidentalStrictMode) {
+  // This module should not be running in strict mode, so the above
+  // assignment should always work unless something is misconfigured. Just
+  // in case runtime.js accidentally runs in strict mode, we can escape
+  // strict mode using a global Function call. This could conceivably fail
+  // if a Content Security Policy forbids using Function, but in that case
+  // the proper solution is to fix the accidental strict mode problem. If
+  // you've misconfigured your bundler to force strict mode and applied a
+  // CSP to forbid Function, and you're not willing to fix either of those
+  // problems, please detail your unique predicament in a GitHub issue.
+  Function("r", "regeneratorRuntime = r")(runtime);
+}
+
 
 /***/ }),
 
@@ -53638,6 +56463,215 @@ exports.typeOf = typeOf;
 if (false) {} else {
   module.exports = __webpack_require__(/*! ./cjs/react-is.development.js */ "./node_modules/prop-types/node_modules/react-is/cjs/react-is.development.js");
 }
+
+
+/***/ }),
+
+/***/ "./node_modules/querystring-es3/decode.js":
+/*!************************************************!*\
+  !*** ./node_modules/querystring-es3/decode.js ***!
+  \************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+// Copyright Joyent, Inc. and other Node contributors.
+//
+// Permission is hereby granted, free of charge, to any person obtaining a
+// copy of this software and associated documentation files (the
+// "Software"), to deal in the Software without restriction, including
+// without limitation the rights to use, copy, modify, merge, publish,
+// distribute, sublicense, and/or sell copies of the Software, and to permit
+// persons to whom the Software is furnished to do so, subject to the
+// following conditions:
+//
+// The above copyright notice and this permission notice shall be included
+// in all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+// OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+// MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN
+// NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
+// DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+// OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
+// USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+
+
+// If obj.hasOwnProperty has been overridden, then calling
+// obj.hasOwnProperty(prop) will break.
+// See: https://github.com/joyent/node/issues/1707
+function hasOwnProperty(obj, prop) {
+  return Object.prototype.hasOwnProperty.call(obj, prop);
+}
+
+module.exports = function(qs, sep, eq, options) {
+  sep = sep || '&';
+  eq = eq || '=';
+  var obj = {};
+
+  if (typeof qs !== 'string' || qs.length === 0) {
+    return obj;
+  }
+
+  var regexp = /\+/g;
+  qs = qs.split(sep);
+
+  var maxKeys = 1000;
+  if (options && typeof options.maxKeys === 'number') {
+    maxKeys = options.maxKeys;
+  }
+
+  var len = qs.length;
+  // maxKeys <= 0 means that we should not limit keys count
+  if (maxKeys > 0 && len > maxKeys) {
+    len = maxKeys;
+  }
+
+  for (var i = 0; i < len; ++i) {
+    var x = qs[i].replace(regexp, '%20'),
+        idx = x.indexOf(eq),
+        kstr, vstr, k, v;
+
+    if (idx >= 0) {
+      kstr = x.substr(0, idx);
+      vstr = x.substr(idx + 1);
+    } else {
+      kstr = x;
+      vstr = '';
+    }
+
+    k = decodeURIComponent(kstr);
+    v = decodeURIComponent(vstr);
+
+    if (!hasOwnProperty(obj, k)) {
+      obj[k] = v;
+    } else if (isArray(obj[k])) {
+      obj[k].push(v);
+    } else {
+      obj[k] = [obj[k], v];
+    }
+  }
+
+  return obj;
+};
+
+var isArray = Array.isArray || function (xs) {
+  return Object.prototype.toString.call(xs) === '[object Array]';
+};
+
+
+/***/ }),
+
+/***/ "./node_modules/querystring-es3/encode.js":
+/*!************************************************!*\
+  !*** ./node_modules/querystring-es3/encode.js ***!
+  \************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+// Copyright Joyent, Inc. and other Node contributors.
+//
+// Permission is hereby granted, free of charge, to any person obtaining a
+// copy of this software and associated documentation files (the
+// "Software"), to deal in the Software without restriction, including
+// without limitation the rights to use, copy, modify, merge, publish,
+// distribute, sublicense, and/or sell copies of the Software, and to permit
+// persons to whom the Software is furnished to do so, subject to the
+// following conditions:
+//
+// The above copyright notice and this permission notice shall be included
+// in all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+// OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+// MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN
+// NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
+// DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+// OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
+// USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+
+
+var stringifyPrimitive = function(v) {
+  switch (typeof v) {
+    case 'string':
+      return v;
+
+    case 'boolean':
+      return v ? 'true' : 'false';
+
+    case 'number':
+      return isFinite(v) ? v : '';
+
+    default:
+      return '';
+  }
+};
+
+module.exports = function(obj, sep, eq, name) {
+  sep = sep || '&';
+  eq = eq || '=';
+  if (obj === null) {
+    obj = undefined;
+  }
+
+  if (typeof obj === 'object') {
+    return map(objectKeys(obj), function(k) {
+      var ks = encodeURIComponent(stringifyPrimitive(k)) + eq;
+      if (isArray(obj[k])) {
+        return map(obj[k], function(v) {
+          return ks + encodeURIComponent(stringifyPrimitive(v));
+        }).join(sep);
+      } else {
+        return ks + encodeURIComponent(stringifyPrimitive(obj[k]));
+      }
+    }).join(sep);
+
+  }
+
+  if (!name) return '';
+  return encodeURIComponent(stringifyPrimitive(name)) + eq +
+         encodeURIComponent(stringifyPrimitive(obj));
+};
+
+var isArray = Array.isArray || function (xs) {
+  return Object.prototype.toString.call(xs) === '[object Array]';
+};
+
+function map (xs, f) {
+  if (xs.map) return xs.map(f);
+  var res = [];
+  for (var i = 0; i < xs.length; i++) {
+    res.push(f(xs[i], i));
+  }
+  return res;
+}
+
+var objectKeys = Object.keys || function (obj) {
+  var res = [];
+  for (var key in obj) {
+    if (Object.prototype.hasOwnProperty.call(obj, key)) res.push(key);
+  }
+  return res;
+};
+
+
+/***/ }),
+
+/***/ "./node_modules/querystring-es3/index.js":
+/*!***********************************************!*\
+  !*** ./node_modules/querystring-es3/index.js ***!
+  \***********************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+exports.decode = exports.parse = __webpack_require__(/*! ./decode */ "./node_modules/querystring-es3/decode.js");
+exports.encode = exports.stringify = __webpack_require__(/*! ./encode */ "./node_modules/querystring-es3/encode.js");
 
 
 /***/ }),
@@ -72700,6 +75734,262 @@ __webpack_require__.r(__webpack_exports__);
 
 /***/ }),
 
+/***/ "./node_modules/react-is/cjs/react-is.development.js":
+/*!***********************************************************!*\
+  !*** ./node_modules/react-is/cjs/react-is.development.js ***!
+  \***********************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+/** @license React v16.8.6
+ * react-is.development.js
+ *
+ * Copyright (c) Facebook, Inc. and its affiliates.
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
+ */
+
+
+
+
+
+if (true) {
+  (function() {
+'use strict';
+
+Object.defineProperty(exports, '__esModule', { value: true });
+
+// The Symbol used to tag the ReactElement-like types. If there is no native Symbol
+// nor polyfill, then a plain number is used for performance.
+var hasSymbol = typeof Symbol === 'function' && Symbol.for;
+
+var REACT_ELEMENT_TYPE = hasSymbol ? Symbol.for('react.element') : 0xeac7;
+var REACT_PORTAL_TYPE = hasSymbol ? Symbol.for('react.portal') : 0xeaca;
+var REACT_FRAGMENT_TYPE = hasSymbol ? Symbol.for('react.fragment') : 0xeacb;
+var REACT_STRICT_MODE_TYPE = hasSymbol ? Symbol.for('react.strict_mode') : 0xeacc;
+var REACT_PROFILER_TYPE = hasSymbol ? Symbol.for('react.profiler') : 0xead2;
+var REACT_PROVIDER_TYPE = hasSymbol ? Symbol.for('react.provider') : 0xeacd;
+var REACT_CONTEXT_TYPE = hasSymbol ? Symbol.for('react.context') : 0xeace;
+var REACT_ASYNC_MODE_TYPE = hasSymbol ? Symbol.for('react.async_mode') : 0xeacf;
+var REACT_CONCURRENT_MODE_TYPE = hasSymbol ? Symbol.for('react.concurrent_mode') : 0xeacf;
+var REACT_FORWARD_REF_TYPE = hasSymbol ? Symbol.for('react.forward_ref') : 0xead0;
+var REACT_SUSPENSE_TYPE = hasSymbol ? Symbol.for('react.suspense') : 0xead1;
+var REACT_MEMO_TYPE = hasSymbol ? Symbol.for('react.memo') : 0xead3;
+var REACT_LAZY_TYPE = hasSymbol ? Symbol.for('react.lazy') : 0xead4;
+
+function isValidElementType(type) {
+  return typeof type === 'string' || typeof type === 'function' ||
+  // Note: its typeof might be other than 'symbol' or 'number' if it's a polyfill.
+  type === REACT_FRAGMENT_TYPE || type === REACT_CONCURRENT_MODE_TYPE || type === REACT_PROFILER_TYPE || type === REACT_STRICT_MODE_TYPE || type === REACT_SUSPENSE_TYPE || typeof type === 'object' && type !== null && (type.$$typeof === REACT_LAZY_TYPE || type.$$typeof === REACT_MEMO_TYPE || type.$$typeof === REACT_PROVIDER_TYPE || type.$$typeof === REACT_CONTEXT_TYPE || type.$$typeof === REACT_FORWARD_REF_TYPE);
+}
+
+/**
+ * Forked from fbjs/warning:
+ * https://github.com/facebook/fbjs/blob/e66ba20ad5be433eb54423f2b097d829324d9de6/packages/fbjs/src/__forks__/warning.js
+ *
+ * Only change is we use console.warn instead of console.error,
+ * and do nothing when 'console' is not supported.
+ * This really simplifies the code.
+ * ---
+ * Similar to invariant but only logs a warning if the condition is not met.
+ * This can be used to log issues in development environments in critical
+ * paths. Removing the logging code for production environments will keep the
+ * same logic and follow the same code paths.
+ */
+
+var lowPriorityWarning = function () {};
+
+{
+  var printWarning = function (format) {
+    for (var _len = arguments.length, args = Array(_len > 1 ? _len - 1 : 0), _key = 1; _key < _len; _key++) {
+      args[_key - 1] = arguments[_key];
+    }
+
+    var argIndex = 0;
+    var message = 'Warning: ' + format.replace(/%s/g, function () {
+      return args[argIndex++];
+    });
+    if (typeof console !== 'undefined') {
+      console.warn(message);
+    }
+    try {
+      // --- Welcome to debugging React ---
+      // This error was thrown as a convenience so that you can use this stack
+      // to find the callsite that caused this warning to fire.
+      throw new Error(message);
+    } catch (x) {}
+  };
+
+  lowPriorityWarning = function (condition, format) {
+    if (format === undefined) {
+      throw new Error('`lowPriorityWarning(condition, format, ...args)` requires a warning ' + 'message argument');
+    }
+    if (!condition) {
+      for (var _len2 = arguments.length, args = Array(_len2 > 2 ? _len2 - 2 : 0), _key2 = 2; _key2 < _len2; _key2++) {
+        args[_key2 - 2] = arguments[_key2];
+      }
+
+      printWarning.apply(undefined, [format].concat(args));
+    }
+  };
+}
+
+var lowPriorityWarning$1 = lowPriorityWarning;
+
+function typeOf(object) {
+  if (typeof object === 'object' && object !== null) {
+    var $$typeof = object.$$typeof;
+    switch ($$typeof) {
+      case REACT_ELEMENT_TYPE:
+        var type = object.type;
+
+        switch (type) {
+          case REACT_ASYNC_MODE_TYPE:
+          case REACT_CONCURRENT_MODE_TYPE:
+          case REACT_FRAGMENT_TYPE:
+          case REACT_PROFILER_TYPE:
+          case REACT_STRICT_MODE_TYPE:
+          case REACT_SUSPENSE_TYPE:
+            return type;
+          default:
+            var $$typeofType = type && type.$$typeof;
+
+            switch ($$typeofType) {
+              case REACT_CONTEXT_TYPE:
+              case REACT_FORWARD_REF_TYPE:
+              case REACT_PROVIDER_TYPE:
+                return $$typeofType;
+              default:
+                return $$typeof;
+            }
+        }
+      case REACT_LAZY_TYPE:
+      case REACT_MEMO_TYPE:
+      case REACT_PORTAL_TYPE:
+        return $$typeof;
+    }
+  }
+
+  return undefined;
+}
+
+// AsyncMode is deprecated along with isAsyncMode
+var AsyncMode = REACT_ASYNC_MODE_TYPE;
+var ConcurrentMode = REACT_CONCURRENT_MODE_TYPE;
+var ContextConsumer = REACT_CONTEXT_TYPE;
+var ContextProvider = REACT_PROVIDER_TYPE;
+var Element = REACT_ELEMENT_TYPE;
+var ForwardRef = REACT_FORWARD_REF_TYPE;
+var Fragment = REACT_FRAGMENT_TYPE;
+var Lazy = REACT_LAZY_TYPE;
+var Memo = REACT_MEMO_TYPE;
+var Portal = REACT_PORTAL_TYPE;
+var Profiler = REACT_PROFILER_TYPE;
+var StrictMode = REACT_STRICT_MODE_TYPE;
+var Suspense = REACT_SUSPENSE_TYPE;
+
+var hasWarnedAboutDeprecatedIsAsyncMode = false;
+
+// AsyncMode should be deprecated
+function isAsyncMode(object) {
+  {
+    if (!hasWarnedAboutDeprecatedIsAsyncMode) {
+      hasWarnedAboutDeprecatedIsAsyncMode = true;
+      lowPriorityWarning$1(false, 'The ReactIs.isAsyncMode() alias has been deprecated, ' + 'and will be removed in React 17+. Update your code to use ' + 'ReactIs.isConcurrentMode() instead. It has the exact same API.');
+    }
+  }
+  return isConcurrentMode(object) || typeOf(object) === REACT_ASYNC_MODE_TYPE;
+}
+function isConcurrentMode(object) {
+  return typeOf(object) === REACT_CONCURRENT_MODE_TYPE;
+}
+function isContextConsumer(object) {
+  return typeOf(object) === REACT_CONTEXT_TYPE;
+}
+function isContextProvider(object) {
+  return typeOf(object) === REACT_PROVIDER_TYPE;
+}
+function isElement(object) {
+  return typeof object === 'object' && object !== null && object.$$typeof === REACT_ELEMENT_TYPE;
+}
+function isForwardRef(object) {
+  return typeOf(object) === REACT_FORWARD_REF_TYPE;
+}
+function isFragment(object) {
+  return typeOf(object) === REACT_FRAGMENT_TYPE;
+}
+function isLazy(object) {
+  return typeOf(object) === REACT_LAZY_TYPE;
+}
+function isMemo(object) {
+  return typeOf(object) === REACT_MEMO_TYPE;
+}
+function isPortal(object) {
+  return typeOf(object) === REACT_PORTAL_TYPE;
+}
+function isProfiler(object) {
+  return typeOf(object) === REACT_PROFILER_TYPE;
+}
+function isStrictMode(object) {
+  return typeOf(object) === REACT_STRICT_MODE_TYPE;
+}
+function isSuspense(object) {
+  return typeOf(object) === REACT_SUSPENSE_TYPE;
+}
+
+exports.typeOf = typeOf;
+exports.AsyncMode = AsyncMode;
+exports.ConcurrentMode = ConcurrentMode;
+exports.ContextConsumer = ContextConsumer;
+exports.ContextProvider = ContextProvider;
+exports.Element = Element;
+exports.ForwardRef = ForwardRef;
+exports.Fragment = Fragment;
+exports.Lazy = Lazy;
+exports.Memo = Memo;
+exports.Portal = Portal;
+exports.Profiler = Profiler;
+exports.StrictMode = StrictMode;
+exports.Suspense = Suspense;
+exports.isValidElementType = isValidElementType;
+exports.isAsyncMode = isAsyncMode;
+exports.isConcurrentMode = isConcurrentMode;
+exports.isContextConsumer = isContextConsumer;
+exports.isContextProvider = isContextProvider;
+exports.isElement = isElement;
+exports.isForwardRef = isForwardRef;
+exports.isFragment = isFragment;
+exports.isLazy = isLazy;
+exports.isMemo = isMemo;
+exports.isPortal = isPortal;
+exports.isProfiler = isProfiler;
+exports.isStrictMode = isStrictMode;
+exports.isSuspense = isSuspense;
+  })();
+}
+
+
+/***/ }),
+
+/***/ "./node_modules/react-is/index.js":
+/*!****************************************!*\
+  !*** ./node_modules/react-is/index.js ***!
+  \****************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+if (false) {} else {
+  module.exports = __webpack_require__(/*! ./cjs/react-is.development.js */ "./node_modules/react-is/cjs/react-is.development.js");
+}
+
+
+/***/ }),
+
 /***/ "./node_modules/react-map-gl/dist/esm/components/base-control.js":
 /*!***********************************************************************!*\
   !*** ./node_modules/react-map-gl/dist/esm/components/base-control.js ***!
@@ -80603,12 +83893,13 @@ module.exports = function(module) {
 /*!************************!*\
   !*** ./pages/index.js ***!
   \************************/
-/*! exports provided: AppContext, default */
+/*! exports provided: AppContext, ThemeContext, default */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "AppContext", function() { return AppContext; });
+/* WEBPACK VAR INJECTION */(function(process) {/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "AppContext", function() { return AppContext; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "ThemeContext", function() { return ThemeContext; });
 /* harmony import */ var _babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! @babel/runtime/regenerator */ "./node_modules/@babel/runtime/regenerator/index.js");
 /* harmony import */ var _babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_0__);
 /* harmony import */ var _babel_runtime_helpers_esm_defineProperty__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! @babel/runtime/helpers/esm/defineProperty */ "./node_modules/@babel/runtime/helpers/esm/defineProperty.js");
@@ -80622,16 +83913,18 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var styled_jsx_style__WEBPACK_IMPORTED_MODULE_5___default = /*#__PURE__*/__webpack_require__.n(styled_jsx_style__WEBPACK_IMPORTED_MODULE_5__);
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! react */ "./node_modules/react/index.js");
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_6___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_6__);
-/* harmony import */ var prop_types__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! prop-types */ "./node_modules/prop-types/index.js");
-/* harmony import */ var prop_types__WEBPACK_IMPORTED_MODULE_7___default = /*#__PURE__*/__webpack_require__.n(prop_types__WEBPACK_IMPORTED_MODULE_7__);
-/* harmony import */ var _lib_api__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ../lib/api */ "./lib/api.js");
-/* harmony import */ var _centers_json__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ../centers.json */ "./centers.json");
-var _centers_json__WEBPACK_IMPORTED_MODULE_9___namespace = /*#__PURE__*/__webpack_require__.t(/*! ../centers.json */ "./centers.json", 1);
-/* harmony import */ var _styles_theme__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! ../styles/theme */ "./styles/theme.js");
-/* harmony import */ var _layouts_main__WEBPACK_IMPORTED_MODULE_11__ = __webpack_require__(/*! ../layouts/main */ "./layouts/main.js");
-/* harmony import */ var _components_react_map_gl_layers__WEBPACK_IMPORTED_MODULE_12__ = __webpack_require__(/*! ../components/react-map-gl/layers */ "./components/react-map-gl/layers.js");
-/* harmony import */ var _layouts_screen__WEBPACK_IMPORTED_MODULE_13__ = __webpack_require__(/*! ../layouts/screen */ "./layouts/screen.js");
-/* harmony import */ var _layouts_mobile__WEBPACK_IMPORTED_MODULE_14__ = __webpack_require__(/*! ../layouts/mobile */ "./layouts/mobile.js");
+/* harmony import */ var next_router__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! next/router */ "./node_modules/next/dist/client/router.js");
+/* harmony import */ var next_router__WEBPACK_IMPORTED_MODULE_7___default = /*#__PURE__*/__webpack_require__.n(next_router__WEBPACK_IMPORTED_MODULE_7__);
+/* harmony import */ var prop_types__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! prop-types */ "./node_modules/prop-types/index.js");
+/* harmony import */ var prop_types__WEBPACK_IMPORTED_MODULE_8___default = /*#__PURE__*/__webpack_require__.n(prop_types__WEBPACK_IMPORTED_MODULE_8__);
+/* harmony import */ var _lib_api__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ../lib/api */ "./lib/api.js");
+/* harmony import */ var _centers_json__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! ../centers.json */ "./centers.json");
+var _centers_json__WEBPACK_IMPORTED_MODULE_10___namespace = /*#__PURE__*/__webpack_require__.t(/*! ../centers.json */ "./centers.json", 1);
+/* harmony import */ var _styles_theme__WEBPACK_IMPORTED_MODULE_11__ = __webpack_require__(/*! ../styles/theme */ "./styles/theme.js");
+/* harmony import */ var _layouts_main__WEBPACK_IMPORTED_MODULE_12__ = __webpack_require__(/*! ../layouts/main */ "./layouts/main.js");
+/* harmony import */ var _components_react_map_gl_layers__WEBPACK_IMPORTED_MODULE_13__ = __webpack_require__(/*! ../components/react-map-gl/layers */ "./components/react-map-gl/layers.js");
+/* harmony import */ var _layouts_screen__WEBPACK_IMPORTED_MODULE_14__ = __webpack_require__(/*! ../layouts/screen */ "./layouts/screen.js");
+/* harmony import */ var _layouts_mobile__WEBPACK_IMPORTED_MODULE_15__ = __webpack_require__(/*! ../layouts/mobile */ "./layouts/mobile.js");
 
 
 
@@ -80654,19 +83947,21 @@ function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { va
 
 
 
+
 var AppContext = react__WEBPACK_IMPORTED_MODULE_6___default.a.createContext();
+var ThemeContext = react__WEBPACK_IMPORTED_MODULE_6___default.a.createContext('theme.default');
 
 var reportToGeoJSON = function reportToGeoJSON(report, date) {
   return {
     type: 'FeatureCollection',
     features: Object.keys(report).filter(function (code) {
-      return Boolean(_centers_json__WEBPACK_IMPORTED_MODULE_9__[code]);
+      return Boolean(_centers_json__WEBPACK_IMPORTED_MODULE_10__[code]);
     }).map(function (code) {
       return {
         type: 'Feature',
         geometry: {
           type: 'Point',
-          coordinates: _centers_json__WEBPACK_IMPORTED_MODULE_9__[code]
+          coordinates: _centers_json__WEBPACK_IMPORTED_MODULE_10__[code]
         },
         properties: _objectSpread({}, report[code].find(function (r) {
           return r.date === date;
@@ -80690,31 +83985,49 @@ var defaultViewport = {
 
 var MainPage = function MainPage(_ref) {
   var data = _ref.data,
-      dates = _ref.dates;
+      dates = _ref.dates,
+      isGouv = _ref.isGouv;
+  var router = Object(next_router__WEBPACK_IMPORTED_MODULE_7__["useRouter"])();
 
   var _useState = Object(react__WEBPACK_IMPORTED_MODULE_6__["useState"])(false),
-      isMobileDevice = _useState[0],
-      setIsMobileDevice = _useState[1];
+      isIframe = _useState[0],
+      setIsIframe = _useState[1];
 
-  var _useState2 = Object(react__WEBPACK_IMPORTED_MODULE_6__["useState"])(dates[dates.length - 1]),
-      date = _useState2[0],
-      setDate = _useState2[1];
+  var _useState2 = Object(react__WEBPACK_IMPORTED_MODULE_6__["useState"])(false),
+      isMobileDevice = _useState2[0],
+      setIsMobileDevice = _useState2[1];
 
-  var _useState3 = Object(react__WEBPACK_IMPORTED_MODULE_6__["useState"])({}),
-      franceReport = _useState3[0],
-      setFranceReport = _useState3[1];
+  var _useState3 = Object(react__WEBPACK_IMPORTED_MODULE_6__["useState"])(false),
+      isTouchScreenDevice = _useState3[0],
+      setIsTouchScreenDevice = _useState3[1];
 
-  var _useState4 = Object(react__WEBPACK_IMPORTED_MODULE_6__["useState"])({}),
-      regionsReport = _useState4[0],
-      setRegionsReport = _useState4[1];
+  var _useState4 = Object(react__WEBPACK_IMPORTED_MODULE_6__["useState"])(dates[dates.length - 1]),
+      date = _useState4[0],
+      setDate = _useState4[1];
 
-  var _useState5 = Object(react__WEBPACK_IMPORTED_MODULE_6__["useState"])({}),
-      departementsReport = _useState5[0],
-      setDepartementsReport = _useState5[1];
+  var _useState5 = Object(react__WEBPACK_IMPORTED_MODULE_6__["useState"])(null),
+      selectedLocation = _useState5[0],
+      setSelectedLocation = _useState5[1];
 
-  var _useState6 = Object(react__WEBPACK_IMPORTED_MODULE_6__["useState"])(defaultViewport),
-      viewport = _useState6[0],
-      setViewport = _useState6[1];
+  var _useState6 = Object(react__WEBPACK_IMPORTED_MODULE_6__["useState"])(null),
+      selectedLocationReport = _useState6[0],
+      setSelectedLocationReport = _useState6[1];
+
+  var _useState7 = Object(react__WEBPACK_IMPORTED_MODULE_6__["useState"])({}),
+      franceReport = _useState7[0],
+      setFranceReport = _useState7[1];
+
+  var _useState8 = Object(react__WEBPACK_IMPORTED_MODULE_6__["useState"])({}),
+      regionsReport = _useState8[0],
+      setRegionsReport = _useState8[1];
+
+  var _useState9 = Object(react__WEBPACK_IMPORTED_MODULE_6__["useState"])({}),
+      departementsReport = _useState9[0],
+      setDepartementsReport = _useState9[1];
+
+  var _useState10 = Object(react__WEBPACK_IMPORTED_MODULE_6__["useState"])(defaultViewport),
+      viewport = _useState10[0],
+      setViewport = _useState10[1];
 
   var dateIdx = lodash_indexOf__WEBPACK_IMPORTED_MODULE_2___default()(dates, date);
 
@@ -80766,10 +84079,32 @@ var MainPage = function MainPage(_ref) {
   }, [date, data]);
 
   var handleResize = function handleResize() {
-    var mobileWidth = _styles_theme__WEBPACK_IMPORTED_MODULE_10__["default"].mobileDisplay.split('px')[0];
+    var mobileWidth = _styles_theme__WEBPACK_IMPORTED_MODULE_11__["default"].mobileDisplay.split('px')[0];
     setIsMobileDevice(window.innerWidth < mobileWidth);
   };
 
+  var getLocationReport = Object(react__WEBPACK_IMPORTED_MODULE_6__["useCallback"])(function (code) {
+    var report;
+
+    if (code.includes('REG')) {
+      report = regionsReport;
+    } else if (code.includes('DEP')) {
+      report = departementsReport;
+    }
+
+    var feature = report.features.find(function (f) {
+      return f.properties.code === code;
+    });
+    return _objectSpread({}, feature.properties);
+  }, [regionsReport, departementsReport]);
+  Object(react__WEBPACK_IMPORTED_MODULE_6__["useEffect"])(function () {
+    if (selectedLocation) {
+      var locationReport = getLocationReport(selectedLocation);
+      setSelectedLocationReport(locationReport);
+    } else {
+      setSelectedLocationReport(null);
+    }
+  }, [regionsReport, selectedLocation, getLocationReport]);
   Object(react__WEBPACK_IMPORTED_MODULE_6__["useEffect"])(function () {
     var latitude = viewport.latitude,
         longitude = viewport.longitude;
@@ -80781,6 +84116,10 @@ var MainPage = function MainPage(_ref) {
   }, [isMobileDevice]); // eslint-disable-line react-hooks/exhaustive-deps
 
   Object(react__WEBPACK_IMPORTED_MODULE_6__["useEffect"])(function () {
+    var iframe = router.query.iframe;
+    setIsIframe(Boolean(iframe === '1'));
+  }, [router]);
+  Object(react__WEBPACK_IMPORTED_MODULE_6__["useEffect"])(function () {
     var franceReport = getFranceReport();
     setFranceReport(franceReport);
     var regionsReport = getRegionsReport();
@@ -80789,7 +84128,7 @@ var MainPage = function MainPage(_ref) {
     setDepartementsReport(departementsReport);
   }, [date, getFranceReport, getRegionsReport, getDepartementsReport]);
   Object(react__WEBPACK_IMPORTED_MODULE_6__["useEffect"])(function () {
-    var mobileWidth = _styles_theme__WEBPACK_IMPORTED_MODULE_10__["default"].mobileDisplay.split('px')[0];
+    var mobileWidth = _styles_theme__WEBPACK_IMPORTED_MODULE_11__["default"].mobileDisplay.split('px')[0];
 
     if (window.innerWidth < mobileWidth) {
       setIsMobileDevice(true);
@@ -80800,48 +84139,77 @@ var MainPage = function MainPage(_ref) {
       window.removeEventListener('resize', handleResize);
     };
   }, []);
+  Object(react__WEBPACK_IMPORTED_MODULE_6__["useEffect"])(function () {
+    setIsTouchScreenDevice('ontouchstart' in document.documentElement);
+  }, []);
   var maps = [{
     name: 'Carte des cas confirmés',
     category: 'régionale',
     data: regionsReport,
     properties: 'casConfirmes',
-    layers: [_components_react_map_gl_layers__WEBPACK_IMPORTED_MODULE_12__["casConfirmesLayer"], _components_react_map_gl_layers__WEBPACK_IMPORTED_MODULE_12__["casConfirmesCountLayer"]]
+    layers: [_components_react_map_gl_layers__WEBPACK_IMPORTED_MODULE_13__["casConfirmesLayer"], _components_react_map_gl_layers__WEBPACK_IMPORTED_MODULE_13__["casConfirmesCountLayer"]]
   }, {
     name: 'Carte des décès',
     category: 'régionale',
     data: regionsReport,
     properties: 'deces',
-    layers: [_components_react_map_gl_layers__WEBPACK_IMPORTED_MODULE_12__["decesLayer"], _components_react_map_gl_layers__WEBPACK_IMPORTED_MODULE_12__["decesCountLayer"]]
+    layers: [_components_react_map_gl_layers__WEBPACK_IMPORTED_MODULE_13__["decesLayer"], _components_react_map_gl_layers__WEBPACK_IMPORTED_MODULE_13__["decesCountLayer"]]
+  }, {
+    name: 'Carte des hospitalisations',
+    category: 'régionale',
+    properties: 'hospitalises',
+    data: regionsReport,
+    layers: [_components_react_map_gl_layers__WEBPACK_IMPORTED_MODULE_13__["hospitalisesLayer"], _components_react_map_gl_layers__WEBPACK_IMPORTED_MODULE_13__["hospitalisesCountLayer"]]
+  }, {
+    name: 'Carte des cas en réanimation',
+    category: 'régionale',
+    properties: 'reanimation',
+    data: regionsReport,
+    layers: [_components_react_map_gl_layers__WEBPACK_IMPORTED_MODULE_13__["reanimationLayer"], _components_react_map_gl_layers__WEBPACK_IMPORTED_MODULE_13__["reanimationCountLayer"]]
   }, {
     name: 'Carte des cas confirmés',
     category: 'départementale',
     data: departementsReport,
     properties: 'casConfirmes',
-    layers: [_components_react_map_gl_layers__WEBPACK_IMPORTED_MODULE_12__["casConfirmesLayer"], _components_react_map_gl_layers__WEBPACK_IMPORTED_MODULE_12__["casConfirmesCountLayer"]]
+    layers: [_components_react_map_gl_layers__WEBPACK_IMPORTED_MODULE_13__["casConfirmesLayer"], _components_react_map_gl_layers__WEBPACK_IMPORTED_MODULE_13__["casConfirmesCountLayer"]]
   }, {
     name: 'Carte des décès',
     category: 'départementale',
     data: departementsReport,
     properties: 'deces',
-    layers: [_components_react_map_gl_layers__WEBPACK_IMPORTED_MODULE_12__["decesLayer"], _components_react_map_gl_layers__WEBPACK_IMPORTED_MODULE_12__["decesCountLayer"]]
+    layers: [_components_react_map_gl_layers__WEBPACK_IMPORTED_MODULE_13__["decesLayer"], _components_react_map_gl_layers__WEBPACK_IMPORTED_MODULE_13__["decesCountLayer"]]
+  }, {
+    name: 'Carte des hospitalisations',
+    category: 'départementale',
+    properties: 'hospitalises',
+    data: departementsReport,
+    layers: [_components_react_map_gl_layers__WEBPACK_IMPORTED_MODULE_13__["hospitalisesLayer"], _components_react_map_gl_layers__WEBPACK_IMPORTED_MODULE_13__["hospitalisesCountLayer"]]
+  }, {
+    name: 'Carte des cas en réanimation',
+    category: 'départementale',
+    properties: 'reanimation',
+    data: departementsReport,
+    layers: [_components_react_map_gl_layers__WEBPACK_IMPORTED_MODULE_13__["reanimationLayer"], _components_react_map_gl_layers__WEBPACK_IMPORTED_MODULE_13__["reanimationCountLayer"]]
   }];
-  return __jsx(_layouts_main__WEBPACK_IMPORTED_MODULE_11__["default"], {
+  return __jsx(_layouts_main__WEBPACK_IMPORTED_MODULE_12__["default"], {
     title: "Tableau de bord de suivi de l\u2019\xE9pid\xE9mie de coronavirus en France",
     __source: {
       fileName: _jsxFileName,
-      lineNumber: 164
+      lineNumber: 241
     },
     __self: this
   }, __jsx("div", {
     className: "jsx-3065482437" + " " + 'main-page-container',
     __source: {
       fileName: _jsxFileName,
-      lineNumber: 166
+      lineNumber: 243
     },
     __self: this
   }, __jsx(AppContext.Provider, {
     value: {
       date: date,
+      selectedLocationReport: selectedLocationReport,
+      setSelectedLocation: setSelectedLocation,
       franceReport: franceReport,
       regionsReport: regionsReport,
       departementsReport: departementsReport,
@@ -80850,49 +84218,62 @@ var MainPage = function MainPage(_ref) {
       setViewport: setViewport,
       maps: maps,
       viewport: viewport,
-      isMobileDevice: isMobileDevice
+      isGouv: isGouv,
+      isIframe: isIframe,
+      isMobileDevice: isMobileDevice,
+      isTouchScreenDevice: isTouchScreenDevice
     },
     __source: {
       fileName: _jsxFileName,
-      lineNumber: 167
+      lineNumber: 244
     },
     __self: this
-  }, isMobileDevice ? __jsx(_layouts_mobile__WEBPACK_IMPORTED_MODULE_14__["default"], {
+  }, __jsx(ThemeContext.Provider, {
+    value: isGouv ? _styles_theme__WEBPACK_IMPORTED_MODULE_11__["default"].gouv : _styles_theme__WEBPACK_IMPORTED_MODULE_11__["default"]["default"],
     __source: {
       fileName: _jsxFileName,
-      lineNumber: 181
+      lineNumber: 262
     },
     __self: this
-  }) : __jsx(_layouts_screen__WEBPACK_IMPORTED_MODULE_13__["default"], {
+  }, isMobileDevice ? __jsx(_layouts_mobile__WEBPACK_IMPORTED_MODULE_15__["default"], {
     __source: {
       fileName: _jsxFileName,
-      lineNumber: 183
+      lineNumber: 264
     },
     __self: this
-  })), __jsx(styled_jsx_style__WEBPACK_IMPORTED_MODULE_5___default.a, {
+  }) : __jsx(_layouts_screen__WEBPACK_IMPORTED_MODULE_14__["default"], {
+    __source: {
+      fileName: _jsxFileName,
+      lineNumber: 266
+    },
+    __self: this
+  }))), __jsx(styled_jsx_style__WEBPACK_IMPORTED_MODULE_5___default.a, {
     id: "3065482437",
     __self: this
-  }, ".main-page-container.jsx-3065482437{display:-webkit-box;display:-webkit-flex;display:-ms-flexbox;display:flex;position:absolute;width:100%;height:100%;}\n/*# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbIi9Vc2Vycy9qZXJvbWUvb3BlbmNvdmlkMTktZnIvZGFzaGJvYXJkL3BhZ2VzL2luZGV4LmpzIl0sIm5hbWVzIjpbXSwibWFwcGluZ3MiOiJBQTBMb0IsQUFHMEIsMEVBQ0ssa0JBQ1AsV0FDQyxZQUNkIiwiZmlsZSI6Ii9Vc2Vycy9qZXJvbWUvb3BlbmNvdmlkMTktZnIvZGFzaGJvYXJkL3BhZ2VzL2luZGV4LmpzIiwic291cmNlc0NvbnRlbnQiOlsiaW1wb3J0IFJlYWN0LCB7dXNlU3RhdGUsIHVzZUNhbGxiYWNrLCB1c2VFZmZlY3R9IGZyb20gJ3JlYWN0J1xuaW1wb3J0IFByb3BUeXBlcyBmcm9tICdwcm9wLXR5cGVzJ1xuaW1wb3J0IHtncm91cEJ5LCB1bmlxLCBpbmRleE9mfSBmcm9tICdsb2Rhc2gnXG5cbmltcG9ydCB7Z2V0RGF0YX0gZnJvbSAnLi4vbGliL2FwaSdcblxuaW1wb3J0IGNlbnRlcnMgZnJvbSAnLi4vY2VudGVycy5qc29uJ1xuXG5pbXBvcnQgdGhlbWUgZnJvbSAnLi4vc3R5bGVzL3RoZW1lJ1xuXG5pbXBvcnQgUGFnZSBmcm9tICcuLi9sYXlvdXRzL21haW4nXG5cbmltcG9ydCB7Y2FzQ29uZmlybWVzTGF5ZXIsIGNhc0NvbmZpcm1lc0NvdW50TGF5ZXIsIGRlY2VzTGF5ZXIsIGRlY2VzQ291bnRMYXllcn0gZnJvbSAnLi4vY29tcG9uZW50cy9yZWFjdC1tYXAtZ2wvbGF5ZXJzJ1xuXG5pbXBvcnQgU2NyZWVuUGFnZSBmcm9tICcuLi9sYXlvdXRzL3NjcmVlbidcbmltcG9ydCBNb2JpbGVQYWdlIGZyb20gJy4uL2xheW91dHMvbW9iaWxlJ1xuXG5leHBvcnQgY29uc3QgQXBwQ29udGV4dCA9IFJlYWN0LmNyZWF0ZUNvbnRleHQoKVxuXG5jb25zdCByZXBvcnRUb0dlb0pTT04gPSAocmVwb3J0LCBkYXRlKSA9PiB7XG4gIHJldHVybiB7XG4gICAgdHlwZTogJ0ZlYXR1cmVDb2xsZWN0aW9uJyxcbiAgICBmZWF0dXJlczogT2JqZWN0LmtleXMocmVwb3J0KS5maWx0ZXIoY29kZSA9PiBCb29sZWFuKGNlbnRlcnNbY29kZV0pKS5tYXAoY29kZSA9PiB7XG4gICAgICByZXR1cm4ge1xuICAgICAgICB0eXBlOiAnRmVhdHVyZScsXG4gICAgICAgIGdlb21ldHJ5OiB7XG4gICAgICAgICAgdHlwZTogJ1BvaW50JyxcbiAgICAgICAgICBjb29yZGluYXRlczogY2VudGVyc1tjb2RlXVxuICAgICAgICB9LFxuICAgICAgICBwcm9wZXJ0aWVzOiB7XG4gICAgICAgICAgLi4ucmVwb3J0W2NvZGVdLmZpbmQociA9PiByLmRhdGUgPT09IGRhdGUpLFxuICAgICAgICAgIGhpc3Rvcnk6IHJlcG9ydFtjb2RlXS5maWx0ZXIociA9PiBkYXRlID49IHIuZGF0ZSlcbiAgICAgICAgfVxuICAgICAgfVxuICAgIH0pLmZpbHRlcihpID0+IEJvb2xlYW4oaSkpXG4gIH1cbn1cblxuY29uc3QgZGVmYXVsdFZpZXdwb3J0ID0ge1xuICBsYXRpdHVkZTogNDYuOSxcbiAgbG9uZ2l0dWRlOiAxLjcsXG4gIHpvb206IDVcbn1cblxuY29uc3QgTWFpblBhZ2UgPSAoe2RhdGEsIGRhdGVzfSkgPT4ge1xuICBjb25zdCBbaXNNb2JpbGVEZXZpY2UsIHNldElzTW9iaWxlRGV2aWNlXSA9IHVzZVN0YXRlKGZhbHNlKVxuICBjb25zdCBbZGF0ZSwgc2V0RGF0ZV0gPSB1c2VTdGF0ZShkYXRlc1tkYXRlcy5sZW5ndGggLSAxXSlcbiAgY29uc3QgW2ZyYW5jZVJlcG9ydCwgc2V0RnJhbmNlUmVwb3J0XSA9IHVzZVN0YXRlKHt9KVxuICBjb25zdCBbcmVnaW9uc1JlcG9ydCwgc2V0UmVnaW9uc1JlcG9ydF0gPSB1c2VTdGF0ZSh7fSlcbiAgY29uc3QgW2RlcGFydGVtZW50c1JlcG9ydCwgc2V0RGVwYXJ0ZW1lbnRzUmVwb3J0XSA9IHVzZVN0YXRlKHt9KVxuICBjb25zdCBbdmlld3BvcnQsIHNldFZpZXdwb3J0XSA9IHVzZVN0YXRlKGRlZmF1bHRWaWV3cG9ydClcblxuICBjb25zdCBkYXRlSWR4ID0gaW5kZXhPZihkYXRlcywgZGF0ZSlcblxuICBjb25zdCBwcmV2aW91c1JlcG9ydCA9IHVzZUNhbGxiYWNrKCgpID0+IHtcbiAgICBjb25zdCBpZHggPSBpbmRleE9mKGRhdGVzLCBkYXRlKVxuICAgIGNvbnN0IHByZXZpb3VzSWR4ID0gaWR4IC0gMVxuXG4gICAgaWYgKHByZXZpb3VzSWR4ID49IDApIHtcbiAgICAgIHNldERhdGUoZGF0ZXNbcHJldmlvdXNJZHhdKVxuICAgIH1cbiAgfSwgW2RhdGVzLCBkYXRlXSlcblxuICBjb25zdCBuZXh0UmVwb3J0ID0gdXNlQ2FsbGJhY2soKCkgPT4ge1xuICAgIGNvbnN0IGlkeCA9IGluZGV4T2YoZGF0ZXMsIGRhdGUpXG4gICAgY29uc3QgbmV4dElkeCA9IGlkeCArIDFcbiAgICBpZiAobmV4dElkeCA8PSBkYXRlcy5sZW5ndGggLSAxKSB7XG4gICAgICBzZXREYXRlKGRhdGVzW25leHRJZHhdKVxuICAgIH1cbiAgfSwgW2RhdGVzLCBkYXRlXSlcblxuICBjb25zdCBnZXRGcmFuY2VSZXBvcnQgPSB1c2VDYWxsYmFjaygoKSA9PiB7XG4gICAgY29uc3QgcmVwb3J0cyA9IGRhdGEuZmlsdGVyKChpdGVtID0+IGl0ZW0ubm9tID09PSAnRnJhbmNlJykpXG4gICAgcmV0dXJuIHtcbiAgICAgIC4uLnJlcG9ydHMuZmluZChyID0+IHIuZGF0ZSA9PT0gZGF0ZSksXG4gICAgICBoaXN0b3J5OiByZXBvcnRzXG4gICAgfVxuICB9LCBbZGF0ZSwgZGF0YV0pXG5cbiAgY29uc3QgZ2V0UmVnaW9uc1JlcG9ydCA9IHVzZUNhbGxiYWNrKCgpID0+IHtcbiAgICBjb25zdCByZWdpb25zID0gZGF0YS5maWx0ZXIoKGl0ZW0gPT4gaXRlbS5jb2RlLmluY2x1ZGVzKCdSRUcnKSkpXG4gICAgY29uc3QgYnlDb2RlID0gZ3JvdXBCeShyZWdpb25zLCAnY29kZScpXG5cbiAgICByZXR1cm4gcmVwb3J0VG9HZW9KU09OKGJ5Q29kZSwgZGF0ZSlcbiAgfSwgW2RhdGUsIGRhdGFdKVxuXG4gIGNvbnN0IGdldERlcGFydGVtZW50c1JlcG9ydCA9IHVzZUNhbGxiYWNrKCgpID0+IHtcbiAgICBjb25zdCBkZXBhcnRlbWVudHMgPSBkYXRhLmZpbHRlcigoaXRlbSA9PiBpdGVtLmNvZGUuaW5jbHVkZXMoJ0RFUCcpKSlcbiAgICBjb25zdCBieUNvZGUgPSBncm91cEJ5KGRlcGFydGVtZW50cywgJ2NvZGUnKVxuXG4gICAgcmV0dXJuIHJlcG9ydFRvR2VvSlNPTihieUNvZGUsIGRhdGUpXG4gIH0sIFtkYXRlLCBkYXRhXSlcblxuICBjb25zdCBoYW5kbGVSZXNpemUgPSAoKSA9PiB7XG4gICAgY29uc3QgbW9iaWxlV2lkdGggPSB0aGVtZS5tb2JpbGVEaXNwbGF5LnNwbGl0KCdweCcpWzBdXG4gICAgc2V0SXNNb2JpbGVEZXZpY2Uod2luZG93LmlubmVyV2lkdGggPCBtb2JpbGVXaWR0aClcbiAgfVxuXG4gIHVzZUVmZmVjdCgoKSA9PiB7XG4gICAgY29uc3Qge2xhdGl0dWRlLCBsb25naXR1ZGV9ID0gdmlld3BvcnRcbiAgICBzZXRWaWV3cG9ydCh7XG4gICAgICBsYXRpdHVkZSxcbiAgICAgIGxvbmdpdHVkZSxcbiAgICAgIHpvb206IGlzTW9iaWxlRGV2aWNlID8gNC4zIDogNVxuICAgIH0pXG4gIH0sIFtpc01vYmlsZURldmljZV0pIC8vIGVzbGludC1kaXNhYmxlLWxpbmUgcmVhY3QtaG9va3MvZXhoYXVzdGl2ZS1kZXBzXG5cbiAgdXNlRWZmZWN0KCgpID0+IHtcbiAgICBjb25zdCBmcmFuY2VSZXBvcnQgPSBnZXRGcmFuY2VSZXBvcnQoKVxuICAgIHNldEZyYW5jZVJlcG9ydChmcmFuY2VSZXBvcnQpXG5cbiAgICBjb25zdCByZWdpb25zUmVwb3J0ID0gZ2V0UmVnaW9uc1JlcG9ydCgpXG4gICAgc2V0UmVnaW9uc1JlcG9ydChyZWdpb25zUmVwb3J0KVxuXG4gICAgY29uc3QgZGVwYXJ0ZW1lbnRzUmVwb3J0ID0gZ2V0RGVwYXJ0ZW1lbnRzUmVwb3J0KClcbiAgICBzZXREZXBhcnRlbWVudHNSZXBvcnQoZGVwYXJ0ZW1lbnRzUmVwb3J0KVxuICB9LCBbZGF0ZSwgZ2V0RnJhbmNlUmVwb3J0LCBnZXRSZWdpb25zUmVwb3J0LCBnZXREZXBhcnRlbWVudHNSZXBvcnRdKVxuXG4gIHVzZUVmZmVjdCgoKSA9PiB7XG4gICAgY29uc3QgbW9iaWxlV2lkdGggPSB0aGVtZS5tb2JpbGVEaXNwbGF5LnNwbGl0KCdweCcpWzBdXG4gICAgaWYgKHdpbmRvdy5pbm5lcldpZHRoIDwgbW9iaWxlV2lkdGgpIHtcbiAgICAgIHNldElzTW9iaWxlRGV2aWNlKHRydWUpXG4gICAgfVxuXG4gICAgd2luZG93LmFkZEV2ZW50TGlzdGVuZXIoJ3Jlc2l6ZScsIGhhbmRsZVJlc2l6ZSlcblxuICAgIHJldHVybiAoKSA9PiB7XG4gICAgICB3aW5kb3cucmVtb3ZlRXZlbnRMaXN0ZW5lcigncmVzaXplJywgaGFuZGxlUmVzaXplKVxuICAgIH1cbiAgfSwgW10pXG5cbiAgY29uc3QgbWFwcyA9IFtcbiAgICB7XG4gICAgICBuYW1lOiAnQ2FydGUgZGVzIGNhcyBjb25maXJtw6lzJyxcbiAgICAgIGNhdGVnb3J5OiAncsOpZ2lvbmFsZScsXG4gICAgICBkYXRhOiByZWdpb25zUmVwb3J0LFxuICAgICAgcHJvcGVydGllczogJ2Nhc0NvbmZpcm1lcycsXG4gICAgICBsYXllcnM6IFtjYXNDb25maXJtZXNMYXllciwgY2FzQ29uZmlybWVzQ291bnRMYXllcl1cbiAgICB9LFxuICAgIHtcbiAgICAgIG5hbWU6ICdDYXJ0ZSBkZXMgZMOpY8OocycsXG4gICAgICBjYXRlZ29yeTogJ3LDqWdpb25hbGUnLFxuICAgICAgZGF0YTogcmVnaW9uc1JlcG9ydCxcbiAgICAgIHByb3BlcnRpZXM6ICdkZWNlcycsXG4gICAgICBsYXllcnM6IFtkZWNlc0xheWVyLCBkZWNlc0NvdW50TGF5ZXJdXG4gICAgfSxcbiAgICB7XG4gICAgICBuYW1lOiAnQ2FydGUgZGVzIGNhcyBjb25maXJtw6lzJyxcbiAgICAgIGNhdGVnb3J5OiAnZMOpcGFydGVtZW50YWxlJyxcbiAgICAgIGRhdGE6IGRlcGFydGVtZW50c1JlcG9ydCxcbiAgICAgIHByb3BlcnRpZXM6ICdjYXNDb25maXJtZXMnLFxuICAgICAgbGF5ZXJzOiBbY2FzQ29uZmlybWVzTGF5ZXIsIGNhc0NvbmZpcm1lc0NvdW50TGF5ZXJdXG4gICAgfSxcbiAgICB7XG4gICAgICBuYW1lOiAnQ2FydGUgZGVzIGTDqWPDqHMnLFxuICAgICAgY2F0ZWdvcnk6ICdkw6lwYXJ0ZW1lbnRhbGUnLFxuICAgICAgZGF0YTogZGVwYXJ0ZW1lbnRzUmVwb3J0LFxuICAgICAgcHJvcGVydGllczogJ2RlY2VzJyxcbiAgICAgIGxheWVyczogW2RlY2VzTGF5ZXIsIGRlY2VzQ291bnRMYXllcl1cbiAgICB9XG4gIF1cblxuICByZXR1cm4gKFxuICAgIDxQYWdlIHRpdGxlPSdUYWJsZWF1IGRlIGJvcmQgZGUgc3VpdmkgZGUgbOKAmcOpcGlkw6ltaWUgZGUgY29yb25hdmlydXMgZW4gRnJhbmNlJz5cblxuICAgICAgPGRpdiBjbGFzc05hbWU9J21haW4tcGFnZS1jb250YWluZXInPlxuICAgICAgICA8QXBwQ29udGV4dC5Qcm92aWRlciB2YWx1ZT17e1xuICAgICAgICAgIGRhdGUsXG4gICAgICAgICAgZnJhbmNlUmVwb3J0LFxuICAgICAgICAgIHJlZ2lvbnNSZXBvcnQsXG4gICAgICAgICAgZGVwYXJ0ZW1lbnRzUmVwb3J0LFxuICAgICAgICAgIHByZXY6IGRhdGVJZHggPiAwID8gcHJldmlvdXNSZXBvcnQgOiBudWxsLFxuICAgICAgICAgIG5leHQ6IGRhdGVJZHggPCBkYXRlcy5sZW5ndGggLSAxID8gbmV4dFJlcG9ydCA6IG51bGwsXG4gICAgICAgICAgc2V0Vmlld3BvcnQsXG4gICAgICAgICAgbWFwcyxcbiAgICAgICAgICB2aWV3cG9ydCxcbiAgICAgICAgICBpc01vYmlsZURldmljZVxuICAgICAgICB9fVxuICAgICAgICA+XG4gICAgICAgICAge2lzTW9iaWxlRGV2aWNlID8gKFxuICAgICAgICAgICAgPE1vYmlsZVBhZ2UgLz5cbiAgICAgICAgICApIDogKFxuICAgICAgICAgICAgPFNjcmVlblBhZ2UgLz5cbiAgICAgICAgICApfVxuICAgICAgICA8L0FwcENvbnRleHQuUHJvdmlkZXI+XG5cbiAgICAgICAgPHN0eWxlIGpzeD57YFxuICAgICAgICAgIC5tYWluLXBhZ2UtY29udGFpbmVyIHtcbiAgICAgICAgICAgIGRpc3BsYXk6IGZsZXg7XG4gICAgICAgICAgICBwb3NpdGlvbjogYWJzb2x1dGU7XG4gICAgICAgICAgICB3aWR0aDogMTAwJTtcbiAgICAgICAgICAgIGhlaWdodDogMTAwJTtcbiAgICAgICAgICB9XG4gICAgICAgIGB9PC9zdHlsZT5cbiAgICAgIDwvZGl2PlxuICAgIDwvUGFnZT5cbiAgKVxufVxuXG5NYWluUGFnZS5wcm9wVHlwZXMgPSB7XG4gIGRhdGE6IFByb3BUeXBlcy5hcnJheS5pc1JlcXVpcmVkLFxuICBkYXRlczogUHJvcFR5cGVzLmFycmF5LmlzUmVxdWlyZWRcbn1cblxuTWFpblBhZ2UuZ2V0SW5pdGlhbFByb3BzID0gYXN5bmMgKCkgPT4ge1xuICBjb25zdCBkYXRhID0gYXdhaXQgZ2V0RGF0YSgpXG5cbiAgcmV0dXJuIHtcbiAgICBkYXRhLFxuICAgIGRhdGVzOiB1bmlxKGRhdGEuZmlsdGVyKHIgPT4gci5jb2RlID09PSAnRlJBJykubWFwKHIgPT4gci5kYXRlKSkuc29ydCgpXG4gIH1cbn1cblxuZXhwb3J0IGRlZmF1bHQgTWFpblBhZ2VcbiJdfQ== */\n/*@ sourceURL=/Users/jerome/opencovid19-fr/dashboard/pages/index.js */")));
+  }, ".main-page-container.jsx-3065482437{display:-webkit-box;display:-webkit-flex;display:-ms-flexbox;display:flex;position:absolute;width:100%;height:100%;}\n/*# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbIi9Vc2Vycy9qZXJvbWUvb3BlbmNvdmlkMTktZnIvZGFzaGJvYXJkL3BhZ2VzL2luZGV4LmpzIl0sIm5hbWVzIjpbXSwibWFwcGluZ3MiOiJBQThRb0IsQUFHMEIsMEVBQ0ssa0JBQ1AsV0FDQyxZQUNkIiwiZmlsZSI6Ii9Vc2Vycy9qZXJvbWUvb3BlbmNvdmlkMTktZnIvZGFzaGJvYXJkL3BhZ2VzL2luZGV4LmpzIiwic291cmNlc0NvbnRlbnQiOlsiaW1wb3J0IFJlYWN0LCB7dXNlU3RhdGUsIHVzZUNhbGxiYWNrLCB1c2VFZmZlY3R9IGZyb20gJ3JlYWN0J1xuaW1wb3J0IHt1c2VSb3V0ZXJ9IGZyb20gJ25leHQvcm91dGVyJ1xuaW1wb3J0IFByb3BUeXBlcyBmcm9tICdwcm9wLXR5cGVzJ1xuaW1wb3J0IHtncm91cEJ5LCB1bmlxLCBpbmRleE9mfSBmcm9tICdsb2Rhc2gnXG5cbmltcG9ydCB7Z2V0RGF0YX0gZnJvbSAnLi4vbGliL2FwaSdcblxuaW1wb3J0IGNlbnRlcnMgZnJvbSAnLi4vY2VudGVycy5qc29uJ1xuXG5pbXBvcnQgdGhlbWUgZnJvbSAnLi4vc3R5bGVzL3RoZW1lJ1xuXG5pbXBvcnQgUGFnZSBmcm9tICcuLi9sYXlvdXRzL21haW4nXG5cbmltcG9ydCB7XG4gIGNhc0NvbmZpcm1lc0xheWVyLFxuICBjYXNDb25maXJtZXNDb3VudExheWVyLFxuICBkZWNlc0xheWVyLFxuICBkZWNlc0NvdW50TGF5ZXIsXG4gIGhvc3BpdGFsaXNlc0xheWVyLFxuICBob3NwaXRhbGlzZXNDb3VudExheWVyLFxuICByZWFuaW1hdGlvbkxheWVyLFxuICByZWFuaW1hdGlvbkNvdW50TGF5ZXJcbn0gZnJvbSAnLi4vY29tcG9uZW50cy9yZWFjdC1tYXAtZ2wvbGF5ZXJzJ1xuXG5pbXBvcnQgU2NyZWVuUGFnZSBmcm9tICcuLi9sYXlvdXRzL3NjcmVlbidcbmltcG9ydCBNb2JpbGVQYWdlIGZyb20gJy4uL2xheW91dHMvbW9iaWxlJ1xuXG5leHBvcnQgY29uc3QgQXBwQ29udGV4dCA9IFJlYWN0LmNyZWF0ZUNvbnRleHQoKVxuZXhwb3J0IGNvbnN0IFRoZW1lQ29udGV4dCA9IFJlYWN0LmNyZWF0ZUNvbnRleHQoJ3RoZW1lLmRlZmF1bHQnKVxuXG5jb25zdCByZXBvcnRUb0dlb0pTT04gPSAocmVwb3J0LCBkYXRlKSA9PiB7XG4gIHJldHVybiB7XG4gICAgdHlwZTogJ0ZlYXR1cmVDb2xsZWN0aW9uJyxcbiAgICBmZWF0dXJlczogT2JqZWN0LmtleXMocmVwb3J0KS5maWx0ZXIoY29kZSA9PiBCb29sZWFuKGNlbnRlcnNbY29kZV0pKS5tYXAoY29kZSA9PiB7XG4gICAgICByZXR1cm4ge1xuICAgICAgICB0eXBlOiAnRmVhdHVyZScsXG4gICAgICAgIGdlb21ldHJ5OiB7XG4gICAgICAgICAgdHlwZTogJ1BvaW50JyxcbiAgICAgICAgICBjb29yZGluYXRlczogY2VudGVyc1tjb2RlXVxuICAgICAgICB9LFxuICAgICAgICBwcm9wZXJ0aWVzOiB7XG4gICAgICAgICAgLi4ucmVwb3J0W2NvZGVdLmZpbmQociA9PiByLmRhdGUgPT09IGRhdGUpLFxuICAgICAgICAgIGhpc3Rvcnk6IHJlcG9ydFtjb2RlXS5maWx0ZXIociA9PiBkYXRlID49IHIuZGF0ZSlcbiAgICAgICAgfVxuICAgICAgfVxuICAgIH0pLmZpbHRlcihpID0+IEJvb2xlYW4oaSkpXG4gIH1cbn1cblxuY29uc3QgZGVmYXVsdFZpZXdwb3J0ID0ge1xuICBsYXRpdHVkZTogNDYuOSxcbiAgbG9uZ2l0dWRlOiAxLjcsXG4gIHpvb206IDVcbn1cblxuY29uc3QgTWFpblBhZ2UgPSAoe2RhdGEsIGRhdGVzLCBpc0dvdXZ9KSA9PiB7XG4gIGNvbnN0IHJvdXRlciA9IHVzZVJvdXRlcigpXG5cbiAgY29uc3QgW2lzSWZyYW1lLCBzZXRJc0lmcmFtZV0gPSB1c2VTdGF0ZShmYWxzZSlcbiAgY29uc3QgW2lzTW9iaWxlRGV2aWNlLCBzZXRJc01vYmlsZURldmljZV0gPSB1c2VTdGF0ZShmYWxzZSlcbiAgY29uc3QgW2lzVG91Y2hTY3JlZW5EZXZpY2UsIHNldElzVG91Y2hTY3JlZW5EZXZpY2VdID0gdXNlU3RhdGUoZmFsc2UpXG4gIGNvbnN0IFtkYXRlLCBzZXREYXRlXSA9IHVzZVN0YXRlKGRhdGVzW2RhdGVzLmxlbmd0aCAtIDFdKVxuICBjb25zdCBbc2VsZWN0ZWRMb2NhdGlvbiwgc2V0U2VsZWN0ZWRMb2NhdGlvbl0gPSB1c2VTdGF0ZShudWxsKVxuICBjb25zdCBbc2VsZWN0ZWRMb2NhdGlvblJlcG9ydCwgc2V0U2VsZWN0ZWRMb2NhdGlvblJlcG9ydF0gPSB1c2VTdGF0ZShudWxsKVxuICBjb25zdCBbZnJhbmNlUmVwb3J0LCBzZXRGcmFuY2VSZXBvcnRdID0gdXNlU3RhdGUoe30pXG4gIGNvbnN0IFtyZWdpb25zUmVwb3J0LCBzZXRSZWdpb25zUmVwb3J0XSA9IHVzZVN0YXRlKHt9KVxuICBjb25zdCBbZGVwYXJ0ZW1lbnRzUmVwb3J0LCBzZXREZXBhcnRlbWVudHNSZXBvcnRdID0gdXNlU3RhdGUoe30pXG4gIGNvbnN0IFt2aWV3cG9ydCwgc2V0Vmlld3BvcnRdID0gdXNlU3RhdGUoZGVmYXVsdFZpZXdwb3J0KVxuXG4gIGNvbnN0IGRhdGVJZHggPSBpbmRleE9mKGRhdGVzLCBkYXRlKVxuXG4gIGNvbnN0IHByZXZpb3VzUmVwb3J0ID0gdXNlQ2FsbGJhY2soKCkgPT4ge1xuICAgIGNvbnN0IGlkeCA9IGluZGV4T2YoZGF0ZXMsIGRhdGUpXG4gICAgY29uc3QgcHJldmlvdXNJZHggPSBpZHggLSAxXG5cbiAgICBpZiAocHJldmlvdXNJZHggPj0gMCkge1xuICAgICAgc2V0RGF0ZShkYXRlc1twcmV2aW91c0lkeF0pXG4gICAgfVxuICB9LCBbZGF0ZXMsIGRhdGVdKVxuXG4gIGNvbnN0IG5leHRSZXBvcnQgPSB1c2VDYWxsYmFjaygoKSA9PiB7XG4gICAgY29uc3QgaWR4ID0gaW5kZXhPZihkYXRlcywgZGF0ZSlcbiAgICBjb25zdCBuZXh0SWR4ID0gaWR4ICsgMVxuICAgIGlmIChuZXh0SWR4IDw9IGRhdGVzLmxlbmd0aCAtIDEpIHtcbiAgICAgIHNldERhdGUoZGF0ZXNbbmV4dElkeF0pXG4gICAgfVxuICB9LCBbZGF0ZXMsIGRhdGVdKVxuXG4gIGNvbnN0IGdldEZyYW5jZVJlcG9ydCA9IHVzZUNhbGxiYWNrKCgpID0+IHtcbiAgICBjb25zdCByZXBvcnRzID0gZGF0YS5maWx0ZXIoKGl0ZW0gPT4gaXRlbS5ub20gPT09ICdGcmFuY2UnKSlcbiAgICByZXR1cm4ge1xuICAgICAgLi4ucmVwb3J0cy5maW5kKHIgPT4gci5kYXRlID09PSBkYXRlKSxcbiAgICAgIGhpc3Rvcnk6IHJlcG9ydHNcbiAgICB9XG4gIH0sIFtkYXRlLCBkYXRhXSlcblxuICBjb25zdCBnZXRSZWdpb25zUmVwb3J0ID0gdXNlQ2FsbGJhY2soKCkgPT4ge1xuICAgIGNvbnN0IHJlZ2lvbnMgPSBkYXRhLmZpbHRlcigoaXRlbSA9PiBpdGVtLmNvZGUuaW5jbHVkZXMoJ1JFRycpKSlcbiAgICBjb25zdCBieUNvZGUgPSBncm91cEJ5KHJlZ2lvbnMsICdjb2RlJylcblxuICAgIHJldHVybiByZXBvcnRUb0dlb0pTT04oYnlDb2RlLCBkYXRlKVxuICB9LCBbZGF0ZSwgZGF0YV0pXG5cbiAgY29uc3QgZ2V0RGVwYXJ0ZW1lbnRzUmVwb3J0ID0gdXNlQ2FsbGJhY2soKCkgPT4ge1xuICAgIGNvbnN0IGRlcGFydGVtZW50cyA9IGRhdGEuZmlsdGVyKChpdGVtID0+IGl0ZW0uY29kZS5pbmNsdWRlcygnREVQJykpKVxuICAgIGNvbnN0IGJ5Q29kZSA9IGdyb3VwQnkoZGVwYXJ0ZW1lbnRzLCAnY29kZScpXG5cbiAgICByZXR1cm4gcmVwb3J0VG9HZW9KU09OKGJ5Q29kZSwgZGF0ZSlcbiAgfSwgW2RhdGUsIGRhdGFdKVxuXG4gIGNvbnN0IGhhbmRsZVJlc2l6ZSA9ICgpID0+IHtcbiAgICBjb25zdCBtb2JpbGVXaWR0aCA9IHRoZW1lLm1vYmlsZURpc3BsYXkuc3BsaXQoJ3B4JylbMF1cbiAgICBzZXRJc01vYmlsZURldmljZSh3aW5kb3cuaW5uZXJXaWR0aCA8IG1vYmlsZVdpZHRoKVxuICB9XG5cbiAgY29uc3QgZ2V0TG9jYXRpb25SZXBvcnQgPSB1c2VDYWxsYmFjayhjb2RlID0+IHtcbiAgICBsZXQgcmVwb3J0XG5cbiAgICBpZiAoY29kZS5pbmNsdWRlcygnUkVHJykpIHtcbiAgICAgIHJlcG9ydCA9IHJlZ2lvbnNSZXBvcnRcbiAgICB9IGVsc2UgaWYgKGNvZGUuaW5jbHVkZXMoJ0RFUCcpKSB7XG4gICAgICByZXBvcnQgPSBkZXBhcnRlbWVudHNSZXBvcnRcbiAgICB9XG5cbiAgICBjb25zdCBmZWF0dXJlID0gcmVwb3J0LmZlYXR1cmVzLmZpbmQoZiA9PiBmLnByb3BlcnRpZXMuY29kZSA9PT0gY29kZSlcbiAgICByZXR1cm4gey4uLmZlYXR1cmUucHJvcGVydGllc31cbiAgfSwgW3JlZ2lvbnNSZXBvcnQsIGRlcGFydGVtZW50c1JlcG9ydF0pXG5cbiAgdXNlRWZmZWN0KCgpID0+IHtcbiAgICBpZiAoc2VsZWN0ZWRMb2NhdGlvbikge1xuICAgICAgY29uc3QgbG9jYXRpb25SZXBvcnQgPSBnZXRMb2NhdGlvblJlcG9ydChzZWxlY3RlZExvY2F0aW9uKVxuICAgICAgc2V0U2VsZWN0ZWRMb2NhdGlvblJlcG9ydChsb2NhdGlvblJlcG9ydClcbiAgICB9IGVsc2Uge1xuICAgICAgc2V0U2VsZWN0ZWRMb2NhdGlvblJlcG9ydChudWxsKVxuICAgIH1cbiAgfSwgW3JlZ2lvbnNSZXBvcnQsIHNlbGVjdGVkTG9jYXRpb24sIGdldExvY2F0aW9uUmVwb3J0XSlcblxuICB1c2VFZmZlY3QoKCkgPT4ge1xuICAgIGNvbnN0IHtsYXRpdHVkZSwgbG9uZ2l0dWRlfSA9IHZpZXdwb3J0XG4gICAgc2V0Vmlld3BvcnQoe1xuICAgICAgbGF0aXR1ZGUsXG4gICAgICBsb25naXR1ZGUsXG4gICAgICB6b29tOiBpc01vYmlsZURldmljZSA/IDQuMyA6IDVcbiAgICB9KVxuICB9LCBbaXNNb2JpbGVEZXZpY2VdKSAvLyBlc2xpbnQtZGlzYWJsZS1saW5lIHJlYWN0LWhvb2tzL2V4aGF1c3RpdmUtZGVwc1xuXG4gIHVzZUVmZmVjdCgoKSA9PiB7XG4gICAgY29uc3Qge2lmcmFtZX0gPSByb3V0ZXIucXVlcnlcblxuICAgIHNldElzSWZyYW1lKEJvb2xlYW4oaWZyYW1lID09PSAnMScpKVxuICB9LCBbcm91dGVyXSlcblxuICB1c2VFZmZlY3QoKCkgPT4ge1xuICAgIGNvbnN0IGZyYW5jZVJlcG9ydCA9IGdldEZyYW5jZVJlcG9ydCgpXG4gICAgc2V0RnJhbmNlUmVwb3J0KGZyYW5jZVJlcG9ydClcblxuICAgIGNvbnN0IHJlZ2lvbnNSZXBvcnQgPSBnZXRSZWdpb25zUmVwb3J0KClcbiAgICBzZXRSZWdpb25zUmVwb3J0KHJlZ2lvbnNSZXBvcnQpXG5cbiAgICBjb25zdCBkZXBhcnRlbWVudHNSZXBvcnQgPSBnZXREZXBhcnRlbWVudHNSZXBvcnQoKVxuICAgIHNldERlcGFydGVtZW50c1JlcG9ydChkZXBhcnRlbWVudHNSZXBvcnQpXG4gIH0sIFtkYXRlLCBnZXRGcmFuY2VSZXBvcnQsIGdldFJlZ2lvbnNSZXBvcnQsIGdldERlcGFydGVtZW50c1JlcG9ydF0pXG5cbiAgdXNlRWZmZWN0KCgpID0+IHtcbiAgICBjb25zdCBtb2JpbGVXaWR0aCA9IHRoZW1lLm1vYmlsZURpc3BsYXkuc3BsaXQoJ3B4JylbMF1cbiAgICBpZiAod2luZG93LmlubmVyV2lkdGggPCBtb2JpbGVXaWR0aCkge1xuICAgICAgc2V0SXNNb2JpbGVEZXZpY2UodHJ1ZSlcbiAgICB9XG5cbiAgICB3aW5kb3cuYWRkRXZlbnRMaXN0ZW5lcigncmVzaXplJywgaGFuZGxlUmVzaXplKVxuXG4gICAgcmV0dXJuICgpID0+IHtcbiAgICAgIHdpbmRvdy5yZW1vdmVFdmVudExpc3RlbmVyKCdyZXNpemUnLCBoYW5kbGVSZXNpemUpXG4gICAgfVxuICB9LCBbXSlcblxuICB1c2VFZmZlY3QoKCkgPT4ge1xuICAgIHNldElzVG91Y2hTY3JlZW5EZXZpY2UoJ29udG91Y2hzdGFydCcgaW4gZG9jdW1lbnQuZG9jdW1lbnRFbGVtZW50KVxuICB9LCBbXSlcblxuICBjb25zdCBtYXBzID0gW1xuICAgIHtcbiAgICAgIG5hbWU6ICdDYXJ0ZSBkZXMgY2FzIGNvbmZpcm3DqXMnLFxuICAgICAgY2F0ZWdvcnk6ICdyw6lnaW9uYWxlJyxcbiAgICAgIGRhdGE6IHJlZ2lvbnNSZXBvcnQsXG4gICAgICBwcm9wZXJ0aWVzOiAnY2FzQ29uZmlybWVzJyxcbiAgICAgIGxheWVyczogW2Nhc0NvbmZpcm1lc0xheWVyLCBjYXNDb25maXJtZXNDb3VudExheWVyXVxuICAgIH0sXG4gICAge1xuICAgICAgbmFtZTogJ0NhcnRlIGRlcyBkw6ljw6hzJyxcbiAgICAgIGNhdGVnb3J5OiAncsOpZ2lvbmFsZScsXG4gICAgICBkYXRhOiByZWdpb25zUmVwb3J0LFxuICAgICAgcHJvcGVydGllczogJ2RlY2VzJyxcbiAgICAgIGxheWVyczogW2RlY2VzTGF5ZXIsIGRlY2VzQ291bnRMYXllcl1cbiAgICB9LFxuICAgIHtcbiAgICAgIG5hbWU6ICdDYXJ0ZSBkZXMgaG9zcGl0YWxpc2F0aW9ucycsXG4gICAgICBjYXRlZ29yeTogJ3LDqWdpb25hbGUnLFxuICAgICAgcHJvcGVydGllczogJ2hvc3BpdGFsaXNlcycsXG4gICAgICBkYXRhOiByZWdpb25zUmVwb3J0LFxuICAgICAgbGF5ZXJzOiBbaG9zcGl0YWxpc2VzTGF5ZXIsIGhvc3BpdGFsaXNlc0NvdW50TGF5ZXJdXG4gICAgfSxcbiAgICB7XG4gICAgICBuYW1lOiAnQ2FydGUgZGVzIGNhcyBlbiByw6lhbmltYXRpb24nLFxuICAgICAgY2F0ZWdvcnk6ICdyw6lnaW9uYWxlJyxcbiAgICAgIHByb3BlcnRpZXM6ICdyZWFuaW1hdGlvbicsXG4gICAgICBkYXRhOiByZWdpb25zUmVwb3J0LFxuICAgICAgbGF5ZXJzOiBbcmVhbmltYXRpb25MYXllciwgcmVhbmltYXRpb25Db3VudExheWVyXVxuICAgIH0sXG4gICAge1xuICAgICAgbmFtZTogJ0NhcnRlIGRlcyBjYXMgY29uZmlybcOpcycsXG4gICAgICBjYXRlZ29yeTogJ2TDqXBhcnRlbWVudGFsZScsXG4gICAgICBkYXRhOiBkZXBhcnRlbWVudHNSZXBvcnQsXG4gICAgICBwcm9wZXJ0aWVzOiAnY2FzQ29uZmlybWVzJyxcbiAgICAgIGxheWVyczogW2Nhc0NvbmZpcm1lc0xheWVyLCBjYXNDb25maXJtZXNDb3VudExheWVyXVxuICAgIH0sXG4gICAge1xuICAgICAgbmFtZTogJ0NhcnRlIGRlcyBkw6ljw6hzJyxcbiAgICAgIGNhdGVnb3J5OiAnZMOpcGFydGVtZW50YWxlJyxcbiAgICAgIGRhdGE6IGRlcGFydGVtZW50c1JlcG9ydCxcbiAgICAgIHByb3BlcnRpZXM6ICdkZWNlcycsXG4gICAgICBsYXllcnM6IFtkZWNlc0xheWVyLCBkZWNlc0NvdW50TGF5ZXJdXG4gICAgfSxcbiAgICB7XG4gICAgICBuYW1lOiAnQ2FydGUgZGVzIGhvc3BpdGFsaXNhdGlvbnMnLFxuICAgICAgY2F0ZWdvcnk6ICdkw6lwYXJ0ZW1lbnRhbGUnLFxuICAgICAgcHJvcGVydGllczogJ2hvc3BpdGFsaXNlcycsXG4gICAgICBkYXRhOiBkZXBhcnRlbWVudHNSZXBvcnQsXG4gICAgICBsYXllcnM6IFtob3NwaXRhbGlzZXNMYXllciwgaG9zcGl0YWxpc2VzQ291bnRMYXllcl1cbiAgICB9LFxuICAgIHtcbiAgICAgIG5hbWU6ICdDYXJ0ZSBkZXMgY2FzIGVuIHLDqWFuaW1hdGlvbicsXG4gICAgICBjYXRlZ29yeTogJ2TDqXBhcnRlbWVudGFsZScsXG4gICAgICBwcm9wZXJ0aWVzOiAncmVhbmltYXRpb24nLFxuICAgICAgZGF0YTogZGVwYXJ0ZW1lbnRzUmVwb3J0LFxuICAgICAgbGF5ZXJzOiBbcmVhbmltYXRpb25MYXllciwgcmVhbmltYXRpb25Db3VudExheWVyXVxuICAgIH1cbiAgXVxuXG4gIHJldHVybiAoXG4gICAgPFBhZ2UgdGl0bGU9J1RhYmxlYXUgZGUgYm9yZCBkZSBzdWl2aSBkZSBs4oCZw6lwaWTDqW1pZSBkZSBjb3JvbmF2aXJ1cyBlbiBGcmFuY2UnPlxuXG4gICAgICA8ZGl2IGNsYXNzTmFtZT0nbWFpbi1wYWdlLWNvbnRhaW5lcic+XG4gICAgICAgIDxBcHBDb250ZXh0LlByb3ZpZGVyIHZhbHVlPXt7XG4gICAgICAgICAgZGF0ZSxcbiAgICAgICAgICBzZWxlY3RlZExvY2F0aW9uUmVwb3J0LFxuICAgICAgICAgIHNldFNlbGVjdGVkTG9jYXRpb24sXG4gICAgICAgICAgZnJhbmNlUmVwb3J0LFxuICAgICAgICAgIHJlZ2lvbnNSZXBvcnQsXG4gICAgICAgICAgZGVwYXJ0ZW1lbnRzUmVwb3J0LFxuICAgICAgICAgIHByZXY6IGRhdGVJZHggPiAwID8gcHJldmlvdXNSZXBvcnQgOiBudWxsLFxuICAgICAgICAgIG5leHQ6IGRhdGVJZHggPCBkYXRlcy5sZW5ndGggLSAxID8gbmV4dFJlcG9ydCA6IG51bGwsXG4gICAgICAgICAgc2V0Vmlld3BvcnQsXG4gICAgICAgICAgbWFwcyxcbiAgICAgICAgICB2aWV3cG9ydCxcbiAgICAgICAgICBpc0dvdXYsXG4gICAgICAgICAgaXNJZnJhbWUsXG4gICAgICAgICAgaXNNb2JpbGVEZXZpY2UsXG4gICAgICAgICAgaXNUb3VjaFNjcmVlbkRldmljZVxuICAgICAgICB9fVxuICAgICAgICA+XG4gICAgICAgICAgPFRoZW1lQ29udGV4dC5Qcm92aWRlciB2YWx1ZT17aXNHb3V2ID8gdGhlbWUuZ291diA6IHRoZW1lLmRlZmF1bHR9PlxuICAgICAgICAgICAge2lzTW9iaWxlRGV2aWNlID8gKFxuICAgICAgICAgICAgICA8TW9iaWxlUGFnZSAvPlxuICAgICAgICAgICAgKSA6IChcbiAgICAgICAgICAgICAgPFNjcmVlblBhZ2UgLz5cbiAgICAgICAgICAgICl9XG4gICAgICAgICAgPC9UaGVtZUNvbnRleHQuUHJvdmlkZXI+XG4gICAgICAgIDwvQXBwQ29udGV4dC5Qcm92aWRlcj5cblxuICAgICAgICA8c3R5bGUganN4PntgXG4gICAgICAgICAgLm1haW4tcGFnZS1jb250YWluZXIge1xuICAgICAgICAgICAgZGlzcGxheTogZmxleDtcbiAgICAgICAgICAgIHBvc2l0aW9uOiBhYnNvbHV0ZTtcbiAgICAgICAgICAgIHdpZHRoOiAxMDAlO1xuICAgICAgICAgICAgaGVpZ2h0OiAxMDAlO1xuICAgICAgICAgIH1cbiAgICAgICAgYH08L3N0eWxlPlxuICAgICAgPC9kaXY+XG4gICAgPC9QYWdlPlxuICApXG59XG5cbk1haW5QYWdlLnByb3BUeXBlcyA9IHtcbiAgZGF0YTogUHJvcFR5cGVzLmFycmF5LmlzUmVxdWlyZWQsXG4gIGlzR291djogUHJvcFR5cGVzLmJvb2wuaXNSZXF1aXJlZCxcbiAgZGF0ZXM6IFByb3BUeXBlcy5hcnJheS5pc1JlcXVpcmVkXG59XG5cbk1haW5QYWdlLmdldEluaXRpYWxQcm9wcyA9IGFzeW5jICgpID0+IHtcbiAgY29uc3QgaXNHb3V2ID0gcHJvY2Vzcy5lbnYuR09VViA9PT0gJzEnXG4gIGNvbnN0IGRhdGEgPSBhd2FpdCBnZXREYXRhKGlzR291dilcblxuICByZXR1cm4ge1xuICAgIGRhdGEsXG4gICAgaXNHb3V2LFxuICAgIGRhdGVzOiB1bmlxKGRhdGEuZmlsdGVyKHIgPT4gci5jb2RlID09PSAnRlJBJykubWFwKHIgPT4gci5kYXRlKSkuc29ydCgpXG4gIH1cbn1cblxuZXhwb3J0IGRlZmF1bHQgTWFpblBhZ2VcbiJdfQ== */\n/*@ sourceURL=/Users/jerome/opencovid19-fr/dashboard/pages/index.js */")));
 };
 
 MainPage.propTypes = {
-  data: prop_types__WEBPACK_IMPORTED_MODULE_7___default.a.array.isRequired,
-  dates: prop_types__WEBPACK_IMPORTED_MODULE_7___default.a.array.isRequired
+  data: prop_types__WEBPACK_IMPORTED_MODULE_8___default.a.array.isRequired,
+  isGouv: prop_types__WEBPACK_IMPORTED_MODULE_8___default.a.bool.isRequired,
+  dates: prop_types__WEBPACK_IMPORTED_MODULE_8___default.a.array.isRequired
 };
 
 MainPage.getInitialProps = function _callee() {
-  var data;
+  var isGouv, data;
   return _babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_0___default.a.async(function _callee$(_context) {
     while (1) {
       switch (_context.prev = _context.next) {
         case 0:
-          _context.next = 2;
-          return _babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_0___default.a.awrap(Object(_lib_api__WEBPACK_IMPORTED_MODULE_8__["getData"])());
+          isGouv = process.env.GOUV === '1';
+          _context.next = 3;
+          return _babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_0___default.a.awrap(Object(_lib_api__WEBPACK_IMPORTED_MODULE_9__["getData"])(isGouv));
 
-        case 2:
+        case 3:
           data = _context.sent;
           return _context.abrupt("return", {
             data: data,
+            isGouv: isGouv,
             dates: lodash_uniq__WEBPACK_IMPORTED_MODULE_3___default()(data.filter(function (r) {
               return r.code === 'FRA';
             }).map(function (r) {
@@ -80900,7 +84281,7 @@ MainPage.getInitialProps = function _callee() {
             })).sort()
           });
 
-        case 4:
+        case 5:
         case "end":
           return _context.stop();
       }
@@ -80909,6 +84290,7 @@ MainPage.getInitialProps = function _callee() {
 };
 
 /* harmony default export */ __webpack_exports__["default"] = (MainPage);
+/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(/*! ./../node_modules/process/browser.js */ "./node_modules/process/browser.js")))
 
 /***/ }),
 
@@ -80922,9 +84304,9 @@ MainPage.getInitialProps = function _callee() {
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony default export */ __webpack_exports__["default"] = ({
-  blue: '#0081D5',
-  lightBlue: '#1E90DA',
-  darkBlue: '#006CB0',
+  blue: '#004192',
+  lightBlue: '#0B6BA8',
+  darkBlue: '#000090',
   lighterBlue: '#B4E1FA',
   white: '#fff',
   lighterGrey: '#EBEFF3',
@@ -80953,8 +84335,20 @@ __webpack_require__.r(__webpack_exports__);
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
+/* harmony import */ var _colors__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./colors */ "./styles/colors.js");
+
 /* harmony default export */ __webpack_exports__["default"] = ({
-  mobileDisplay: '720px'
+  mobileDisplay: '720px',
+  "default": {
+    primary: _colors__WEBPACK_IMPORTED_MODULE_0__["default"].darkerGrey,
+    secondary: _colors__WEBPACK_IMPORTED_MODULE_0__["default"].darkGrey,
+    alt: _colors__WEBPACK_IMPORTED_MODULE_0__["default"].lightGrey
+  },
+  gouv: {
+    primary: _colors__WEBPACK_IMPORTED_MODULE_0__["default"].blue,
+    secondary: _colors__WEBPACK_IMPORTED_MODULE_0__["default"].darkBlue,
+    alt: _colors__WEBPACK_IMPORTED_MODULE_0__["default"].lightBlue
+  }
 });
 
 /***/ }),
